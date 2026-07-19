@@ -1,3 +1,5 @@
+/** Public icon path — respects Vite `base` (GitHub Pages subpath or `/`). */
 export function iconUrl(name: string): string {
-  return `/icons/${name}.png`;
+  const base = import.meta.env.BASE_URL || "/";
+  return `${base}icons/${name}.png`;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { iconUrl } from "../game/icons";
 import { rollD6 } from "../game/engine";
 
 interface Props {
@@ -69,9 +70,9 @@ export function DiceRoller({
         aria-label={label}
       >
         {face ? (
-          <img src={`/icons/die-${face}.png`} alt="" draggable={false} />
+          <img src={iconUrl(`die-${face}`)} alt="" draggable={false} />
         ) : (
-          <img src="/icons/die.png" alt="" className="die-idle" draggable={false} />
+          <img src={iconUrl("die")} alt="" className="die-idle" draggable={false} />
         )}
       </button>
       {variant !== "rail" && !busy && hint ? (

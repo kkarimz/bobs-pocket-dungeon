@@ -137,7 +137,7 @@ export function PlayScreen({
         <div className="map-column">
           <header className="play-top">
             <div className="play-brand">
-              <img src="/icons/bob.png" alt="" className="play-logo" />
+              <img src={iconUrl("bob")} alt="" className="play-logo" />
               <h1 className="play-title">BOB&apos;S POCKET DUNGEON</h1>
             </div>
             <p className="message status-banner">{statusLine(run)}</p>
@@ -276,7 +276,7 @@ export function PlayScreen({
       </div>
 
       <footer className="play-foot">
-        <p>© {new Date().getFullYear()} Bob&apos;s Pocket Dungeon · All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Kappz LLC · All rights reserved.</p>
         <p className="play-foot-credits">
           Icons by Lorc &amp; Delapouite —{" "}
           <a href="https://game-icons.net" target="_blank" rel="noreferrer">

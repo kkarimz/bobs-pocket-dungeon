@@ -1,3 +1,5 @@
+import { iconUrl } from "../game/icons";
+
 interface Props {
   hasContinue: boolean;
   onNew: () => void;
@@ -7,7 +9,7 @@ interface Props {
 export function TitleScreen({ hasContinue, onNew, onContinue }: Props) {
   return (
     <div className="screen title-screen">
-      <img src="/icons/bob.png" alt="" className="hero-icon" />
+      <img src={iconUrl("bob")} alt="" className="hero-icon" />
       <h1>BOB'S POCKET DUNGEON</h1>
       <p className="tagline">Solo roll-and-crawl · tap your path</p>
 
