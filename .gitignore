@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+web/node_modules/
+web/dist/
+*.local
+.idea/
+.vscode/
+
+# Bulky third-party icon packs (not needed for web deploy)
+assets/handdrawn-source/
+assets/kenney-icon-font/
+assets/kenney-roguelike/
+assets/kenney-rpg/
