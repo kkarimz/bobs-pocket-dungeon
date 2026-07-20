@@ -8,6 +8,7 @@ import {
   GRID_COLS,
   GRID_ROWS,
   MIMIC,
+  mimicCountForFloor,
   SHOP,
   TELEPORTER,
   WALL,
@@ -399,16 +400,18 @@ export function generateFloor(rng: PythonRandom, floorNumber: number): Floor {
       place(grid, cell, COIN);
     }
 
-    const shopTaken = take(2);
-    if (!shopTaken.length) continue;
-    rng.shuffle(shopTaken);
-    place(grid, shopTaken[0]!, SHOP);
-    if (shopTaken.length >= 2) {
-      place(grid, shopTaken[1]!, MIMIC);
+    // One merchant + 1–2 disguised mimics (all look like chests)
+    const mimicN = mimicCountForFloor(floorNumber);
+    const chestTaken = take(1 + mimicN);
+    if (!chestTaken.length) continue;
+    rng.shuffle(chestTaken);
+    place(grid, chestTaken[0]!, SHOP);
+    for (let i = 1; i < chestTaken.length; i++) {
+      place(grid, chestTaken[i]!, MIMIC);
     }
 
     if (floorNumber % 4 === 0 && empties.length >= 2) {
-      const shopCell = shopTaken[0]!;
+      const shopCell = chestTaken[0]!;
       let near = empties.filter((c) => manhattan(c, shopCell) <= 2);
       if (!near.length) {
         near = [...empties]
@@ -452,6 +455,9 @@ export function generateFloor(rng: PythonRandom, floorNumber: number): Floor {
   place(grid, exitC, EXIT);
   place(grid, [Math.floor(cols / 2), 0], SHOP);
   place(grid, [Math.floor(cols / 2), rows - 1], MIMIC);
+  if (floorNumber >= 9) {
+    place(grid, [Math.floor(cols / 2) - 1, rows - 1], MIMIC);
+  }
   if (floorNumber % 4 === 0) {
     place(grid, [Math.floor(cols / 2) + 1, 0], TELEPORTER);
     place(grid, [cols - 2, rows - 1], TELEPORTER);

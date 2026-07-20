@@ -64,6 +64,8 @@ export interface RunState {
   pendingStairs: boolean;
   /** True after HP hits 0 — wait for player to acknowledge before advancing. */
   pendingDeath: boolean;
+  /** Mimic just revealed — show overlay before continuing (damage already applied). */
+  pendingMimic: { damage: number; blocked: boolean } | null;
   bombArmed: boolean;
   keyArmed: boolean;
   won: boolean;
@@ -117,6 +119,7 @@ export function createNewRun(seed: number, floors = DEFAULT_FLOORS): RunState {
     message: "Roll starting HP.",
     pendingStairs: false,
     pendingDeath: false,
+    pendingMimic: null,
     bombArmed: false,
     keyArmed: false,
     won: false,
@@ -143,7 +146,7 @@ export function applyStartingHp(state: RunState, roll: number): RunState {
 
 export function startTurnRoll(state: RunState, dieValue?: number): RunState {
   if (state.startingHp <= 0) return state;
-  if (state.pendingDeath) return state;
+  if (state.pendingDeath || state.pendingMimic) return state;
   if (state.movesLeft > 0) return state;
   const die = dieValue ?? rollD6();
   return {
@@ -195,6 +198,7 @@ export function isStuck(state: RunState): boolean {
     !state.shopOpen &&
     !state.pendingStairs &&
     !state.pendingDeath &&
+    !state.pendingMimic &&
     legalMoves(state).length === 0
   );
 }
@@ -259,7 +263,8 @@ export function adjacentMoves(state: RunState): Coord[] {
     state.movesLeft <= 0 ||
     state.shopOpen ||
     state.pendingStairs ||
-    state.pendingDeath
+    state.pendingDeath ||
+    state.pendingMimic
   )
     return [];
   const cols = state.grid[0]!.length;
@@ -294,7 +299,8 @@ export function reachableMap(state: RunState): Map<string, Coord[]> {
     state.movesLeft <= 0 ||
     state.shopOpen ||
     state.pendingStairs ||
-    state.pendingDeath
+    state.pendingDeath ||
+    state.pendingMimic
   )
     return result;
 
@@ -429,32 +435,24 @@ function resolveCell(
       next.floaters = pushFloater(next, "SHOP", "info");
     }
   } else if (cell === MIMIC) {
-    // Tap the mimic as your destination to "open" it — it bites (turn ends)
+    // Looks like a chest until you open it — then the mimic reveals
     if (interact) {
       const raw = MIMIC_DAMAGE;
       const dmg = applyDamage(next, raw);
       next.hp = Math.max(0, next.hp - dmg);
       next.movesLeft = 0;
       grid[y]![x] = EMPTY;
+      next.pendingMimic = { damage: dmg, blocked: dmg === 0 };
+      next.message = dmg === 0 ? "Bomb ignored the mimic!" : `Mimic! −${dmg} HP.`;
+      next.floaters = pushFloater(
+        next,
+        dmg === 0 ? "BLOCKED" : `−${dmg} HP`,
+        dmg === 0 ? "info" : "dmg",
+      );
+      if (dmg > 0) next.shake = true;
       if (next.bombArmed) {
         next.inventory = { ...next.inventory, usedBomb: true };
         next.bombArmed = false;
-        next.message =
-          dmg === 0 ? "Bomb ignored the mimic!" : `Mimic! −${dmg} HP.`;
-        next.floaters = pushFloater(
-          next,
-          dmg === 0 ? "BLOCKED" : `−${dmg} HP`,
-          dmg === 0 ? "info" : "dmg",
-        );
-        if (dmg > 0) next.shake = true;
-      } else {
-        next.message = dmg > 0 ? `Mimic! −${dmg} HP.` : "Mimic shrugged.";
-        next.floaters = pushFloater(
-          next,
-          dmg > 0 ? `−${dmg} HP` : "MIMIC",
-          dmg > 0 ? "dmg" : "info",
-        );
-        if (dmg > 0) next.shake = true;
       }
     }
   } else if (cell === TELEPORTER) {
@@ -484,7 +482,8 @@ function resolveCell(
 
   next.grid = grid;
 
-  if (next.hp <= 0) {
+  // Mimic reveal overlay first; death waits until they dismiss it
+  if (next.hp <= 0 && !next.pendingMimic) {
     return handleDeath(next);
   }
   return next;
@@ -499,6 +498,7 @@ function handleDeath(state: RunState): RunState {
     movesLeft: 0,
     shopOpen: false,
     pendingStairs: false,
+    pendingMimic: null,
     pendingDeath: true,
     bombArmed: false,
     keyArmed: false,
@@ -506,6 +506,18 @@ function handleDeath(state: RunState): RunState {
     shake: true,
     message: `Death #${deaths}.`,
   };
+}
+
+/** After the mimic reveal card — continue, or show death if HP hit 0. */
+export function acknowledgeMimic(state: RunState): RunState {
+  if (!state.pendingMimic) return state;
+  const next: RunState = {
+    ...state,
+    pendingMimic: null,
+    message: state.hp <= 0 ? state.message : "Roll to move.",
+  };
+  if (next.hp <= 0) return handleDeath(next);
+  return next;
 }
 
 /** After the death screen — next floor (reset HP/gold) or run-over stats. */
@@ -538,6 +550,7 @@ export function acknowledgeDeath(state: RunState): RunState {
     shopOpen: false,
     pendingStairs: false,
     pendingDeath: false,
+    pendingMimic: null,
     bombArmed: false,
     keyArmed: false,
     floaters: [],
@@ -565,10 +578,10 @@ export function stepTo(
   // Default false — never open chest/stairs unless walkTo opts in
   next = resolveCell(next, dest, opts?.interact === true);
   if (next.screen !== "play") return next;
-  if (next.movesLeft === 0 && !next.pendingStairs && !next.shopOpen) {
+  if (next.movesLeft === 0 && !next.pendingStairs && !next.shopOpen && !next.pendingMimic) {
     // Keep short event text; otherwise prompt next roll
     const keepEvent =
-      /^(Monster|Hit|\+1 GOLD|Bomb|Key|No damage|BLOCKED|Portal)/i.test(
+      /^(Monster|Hit|\+1 GOLD|Bomb|Key|No damage|BLOCKED|Portal|Mimic)/i.test(
         next.message,
       ) || next.message.includes("−");
     next = {
@@ -605,7 +618,13 @@ export function openStairsGate(state: RunState): RunState {
 
 /** Open the merchant only after your final step landed on the chest. */
 export function openShop(state: RunState): RunState {
-  if (state.shopOpen || state.pendingDeath || state.pendingStairs) return state;
+  if (
+    state.shopOpen ||
+    state.pendingDeath ||
+    state.pendingStairs ||
+    state.pendingMimic
+  )
+    return state;
   if (state.movesLeft > 0) return state;
   const [x, y] = state.pos;
   if (state.grid[y]![x]! !== SHOP) return state;
@@ -641,6 +660,7 @@ export function descendStairs(state: RunState): RunState {
     visitedThisTurn: [],
     shopOpen: false,
     pendingStairs: false,
+    pendingMimic: null,
     bombArmed: false,
     keyArmed: false,
     floaters: [{ id: Date.now(), text: `FLOOR ${nextFloor + 1}`, kind: "info" }],
@@ -727,6 +747,9 @@ export function loadRun(): RunState | null {
     const state = JSON.parse(raw) as RunState;
     if (typeof state.pendingDeath !== "boolean") {
       state.pendingDeath = false;
+    }
+    if (state.pendingMimic == null || typeof state.pendingMimic !== "object") {
+      state.pendingMimic = null;
     }
     // Scrub legacy stacked status lines from older builds
     if (

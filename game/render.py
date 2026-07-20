@@ -284,7 +284,7 @@ def draw_shop(c: canvas.Canvas, book: Book) -> None:
     c.drawCentredString(
         PAGE_W / 2,
         top - 0.26 * inch,
-        "Stop on the merchant chest to buy. Mimics bite (−2 HP).",
+        "Chests look alike. Open one: shop, or mimic (−2 HP).",
     )
 
     y = top - 0.52 * inch

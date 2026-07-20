@@ -1112,12 +1112,14 @@ h1 {
 
 .play-screen.gate-open .play-frame,
 .play-screen.hp-setup-open .play-frame,
-.play-screen.death-open .play-frame {
+.play-screen.death-open .play-frame,
+.play-screen.mimic-open .play-frame {
   opacity: 0.35;
   pointer-events: none;
 }
 
-.death-overlay {
+.death-overlay,
+.mimic-overlay {
   position: fixed;
   inset: 0;
   z-index: 35;
@@ -1128,6 +1130,11 @@ h1 {
   padding: 1.25rem;
   padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
   animation: gate-fade 0.22s ease-out;
+}
+
+.mimic-overlay {
+  background: rgba(26, 16, 8, 0.84);
+  z-index: 34;
 }
 
 .death-card {
@@ -1177,6 +1184,51 @@ h1 {
 }
 
 .death-card .btn.primary {
+  min-width: 9rem;
+  margin-top: 0.2rem;
+}
+
+.mimic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  width: min(18rem, 100%);
+  padding: 1.35rem 1.15rem 1.15rem;
+  background: var(--panel);
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.mimic-icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+  background: var(--cell);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  padding: 0.35rem;
+}
+
+.mimic-card h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+.mimic-detail {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.mimic-card .btn.primary {
   min-width: 9rem;
   margin-top: 0.2rem;
 }

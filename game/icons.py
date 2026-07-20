@@ -24,7 +24,7 @@ CELL_ICONS = {
     "#": "wall",
     "o": "coin",
     "S": "shop",
-    "M": "mimic",
+    "M": "shop",  # disguised in the booklet grid too
     "T": "teleport",
 }
 

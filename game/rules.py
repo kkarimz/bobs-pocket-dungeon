@@ -26,6 +26,12 @@ TELEPORTER = "T"
 MIMIC_DAMAGE = 2  # Fake chest bite (shield / bomb apply)
 
 
+def mimic_count_for_floor(floor_number: int) -> int:
+    """Higher floors hide a second mimic among the chests."""
+    return 2 if floor_number >= 9 else 1
+
+
+
 @dataclass(frozen=True)
 class ShopItem:
     name: str
@@ -83,7 +89,7 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "WHEN YOU STOP",
         (
-            "Chest → merchant shop, or mimic (−2 HP)",
+            "Chests look alike — merchant, or mimic (−2 HP)",
             "Stairs → tap them (or Gate) to descend",
         ),
     ),

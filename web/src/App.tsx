@@ -17,6 +17,7 @@ import {
   openStairsGate,
   openShop,
   pathTo,
+  acknowledgeMimic,
   rerollWithFeather,
   saveRun,
   startTurnRoll,
@@ -112,6 +113,7 @@ export function App() {
         state.shopOpen ||
         state.pendingStairs ||
         state.pendingDeath ||
+        state.pendingMimic ||
         state.hp <= 0 ||
         state.movesLeft <= 0 ||
         (state.pos[0] === prev.pos[0] &&
@@ -177,6 +179,7 @@ export function App() {
       onBomb={() => setRun(armBomb(run))}
       onKey={() => setRun(armKey(run))}
       onAcknowledgeDeath={() => setRun(acknowledgeDeath(run))}
+      onAcknowledgeMimic={() => setRun(acknowledgeMimic(run))}
       onQuit={() => {
         saveRun(run);
         setRun(null);

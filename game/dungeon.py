@@ -19,6 +19,7 @@ from .rules import (
     STARTING_COINS,
     TELEPORTER,
     WALL,
+    mimic_count_for_floor,
 )
 
 
@@ -307,14 +308,15 @@ def generate_floor(rng: random.Random, floor_number: int) -> Floor:
         for cell in take(_coin_count(floor_number)):
             _place(grid, cell, COIN)
 
-        # Two identical chests: one merchant, one mimic (order shuffled)
-        chest_cells = take(2)
+        # One merchant + 1–2 disguised mimics (identical chest icons in print)
+        mimic_n = mimic_count_for_floor(floor_number)
+        chest_cells = take(1 + mimic_n)
         if not chest_cells:
             continue
         rng.shuffle(chest_cells)
         _place(grid, chest_cells[0], SHOP)
-        if len(chest_cells) >= 2:
-            _place(grid, chest_cells[1], MIMIC)
+        for cell in chest_cells[1:]:
+            _place(grid, cell, MIMIC)
 
         # Linked portal pair on floors 4/8/12/16 — one near the chest, one far
         if floor_number % 4 == 0 and len(empties) >= 2:
@@ -351,6 +353,8 @@ def generate_floor(rng: random.Random, floor_number: int) -> Floor:
     _place(grid, exit_c, EXIT)
     _place(grid, (cols // 2, 0), SHOP)
     _place(grid, (cols // 2, rows - 1), MIMIC)
+    if floor_number >= 9:
+        _place(grid, (cols // 2 - 1, rows - 1), MIMIC)
     if floor_number % 4 == 0:
         # One portal next to the chest, one across the map
         _place(grid, (cols // 2 + 1, 0), TELEPORTER)

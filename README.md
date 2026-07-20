@@ -56,7 +56,7 @@ Layout seeds match between the PDF and the web app (same dungeon generator).
 - Stairs, chests, gold, and portals
 - Odd rolls = diagonal only; no cutting wall corners (D&D style)
 - Enter monster / coin / portal; **stop** on chest or stairs to use them
-- Two chests per floor: one merchant, one **mimic** (−2 HP)
+- Several chests per floor (identical art): one merchant, **1 mimic** (2 from floor 9, −2 HP)
 - Walls are placed in L-shaped blocks for clearer corridors
 
 ## Printing on 4×6 photo paper

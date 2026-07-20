@@ -10,11 +10,13 @@ import { DiceRoller } from "./DiceRoller";
 import { DescendGate } from "./DescendGate";
 import { DeathOverlay } from "./DeathOverlay";
 import { HpSetupOverlay } from "./HpSetupOverlay";
+import { MimicOverlay } from "./MimicOverlay";
 
 /** Short banner text — never show stacked legacy roll/mode prompts. */
 function statusLine(run: RunState): string {
   if (run.startingHp <= 0) return "Roll starting HP.";
   if (run.pendingDeath) return run.message.trim() || "You died.";
+  if (run.pendingMimic) return "Mimic!";
   if (run.pendingStairs) return "The gate awaits.";
   if (run.shopOpen) return "Merchant.";
 
@@ -93,6 +95,7 @@ interface Props {
   onKey: () => void;
   onQuit: () => void;
   onAcknowledgeDeath: () => void;
+  onAcknowledgeMimic: () => void;
 }
 
 export function PlayScreen({
@@ -114,6 +117,7 @@ export function PlayScreen({
   onKey,
   onQuit,
   onAcknowledgeDeath,
+  onAcknowledgeMimic,
 }: Props) {
   const [rolling, setRolling] = useState(false);
   const [rerolling, setRerolling] = useState(false);
@@ -133,6 +137,7 @@ export function PlayScreen({
   const canRoll =
     !needsHp &&
     !run.pendingDeath &&
+    !run.pendingMimic &&
     run.movesLeft <= 0 &&
     !run.pendingStairs &&
     !run.shopOpen &&
@@ -160,7 +165,7 @@ export function PlayScreen({
 
   return (
     <div
-      className={`screen play-screen ${run.pendingStairs ? "gate-open" : ""} ${needsHp ? "hp-setup-open" : ""} ${run.pendingDeath ? "death-open" : ""}`}
+      className={`screen play-screen ${run.pendingStairs ? "gate-open" : ""} ${needsHp ? "hp-setup-open" : ""} ${run.pendingDeath ? "death-open" : ""} ${run.pendingMimic ? "mimic-open" : ""}`}
     >
       <div className="play-frame">
         <aside className="stat-rail" aria-label="Run stats">
@@ -380,6 +385,14 @@ export function PlayScreen({
       </footer>
 
       {needsHp && <HpSetupOverlay onRolled={onStartingHp} />}
+
+      {run.pendingMimic && (
+        <MimicOverlay
+          damage={run.pendingMimic.damage}
+          blocked={run.pendingMimic.blocked}
+          onContinue={onAcknowledgeMimic}
+        />
+      )}
 
       {run.pendingDeath && (
         <DeathOverlay
