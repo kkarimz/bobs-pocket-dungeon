@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { rollD6 } from "../game/engine";
 
 interface Props {
@@ -12,9 +12,45 @@ interface Props {
   hint?: string;
   /** Compact die for the side rail */
   variant?: "default" | "rail";
+  /** Even = straight, odd = diagonal — lights the face frame */
+  diagonal?: boolean;
+  /** Remaining steps this turn (shown in the center while moving) */
+  movesLeft?: number;
 }
 
-/** Tap to roll — parchment number tile (keeps last result; idle shows ROLL). */
+function DirFrame({
+  diagonal,
+  active,
+  center,
+}: {
+  diagonal: boolean;
+  active: boolean;
+  center: ReactNode;
+}) {
+  return (
+    <span
+      className={`die-frame ${active ? (diagonal ? "diag" : "orth") : "idle"}`}
+      aria-hidden
+    >
+      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => {
+        const orth = i === 1 || i === 3 || i === 5 || i === 7;
+        const diag = i === 0 || i === 2 || i === 6 || i === 8;
+        const isCenter = i === 4;
+        const on = active && (diagonal ? diag : orth);
+        return (
+          <i
+            key={i}
+            className={`die-frame-cell${on ? " on" : ""}${isCenter ? " hub" : ""}`}
+          >
+            {isCenter ? center : null}
+          </i>
+        );
+      })}
+    </span>
+  );
+}
+
+/** Tap to roll — number + direction fused into one tile. */
 export function DiceRoller({
   rolling,
   value,
@@ -25,6 +61,8 @@ export function DiceRoller({
   size = "md",
   hint,
   variant = "default",
+  diagonal = false,
+  movesLeft = 0,
 }: Props) {
   const [display, setDisplay] = useState<number | null>(value);
   const [animating, setAnimating] = useState(false);
@@ -57,6 +95,24 @@ export function DiceRoller({
   const busy = disabled || animating || rolling;
   const face = display && display >= 1 && display <= 6 ? display : null;
   const canRoll = !busy;
+  const modeActive = face !== null && !animating;
+
+  let center: ReactNode;
+  if (animating && face !== null) {
+    center = <span className="die-num">{face}</span>;
+  } else if (movesLeft > 0) {
+    center = <span className="die-num">{movesLeft}</span>;
+  } else if (face !== null) {
+    center = <span className="die-num">{face}</span>;
+  } else {
+    center = <span className="die-roll-label">ROLL</span>;
+  }
+
+  const modeLabel = !modeActive
+    ? ""
+    : diagonal
+      ? "diagonal"
+      : "straight";
 
   return (
     <div
@@ -69,22 +125,17 @@ export function DiceRoller({
           animating ? "tumbling" : "",
           canRoll ? "can-roll" : "",
           face === null ? "is-idle" : "",
+          modeActive ? (diagonal ? "mode-diag" : "mode-orth") : "",
         ]
           .filter(Boolean)
           .join(" ")}
         disabled={busy}
         onClick={onRollRequest}
-        aria-label={label}
+        aria-label={
+          modeLabel ? `${label} (${modeLabel}, ${movesLeft || face} left)` : label
+        }
       >
-        {face !== null ? (
-          <span className="die-num" aria-hidden>
-            {face}
-          </span>
-        ) : (
-          <span className="die-roll-label" aria-hidden>
-            ROLL
-          </span>
-        )}
+        <DirFrame diagonal={diagonal} active={modeActive} center={center} />
       </button>
       {variant !== "rail" && !busy && hint ? (
         <span className="dice-hint">{hint}</span>

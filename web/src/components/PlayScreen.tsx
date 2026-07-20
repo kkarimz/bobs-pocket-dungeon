@@ -211,6 +211,8 @@ export function PlayScreen({
             <DiceRoller
               rolling={rolling || rerolling}
               value={run.die}
+              diagonal={run.diagonal}
+              movesLeft={run.movesLeft}
               disabled={rerolling ? rolling : !canRoll && !rolling}
               variant="rail"
               label={rerolling ? "Rerolling…" : "Tap die to roll"}
@@ -230,30 +232,6 @@ export function PlayScreen({
               }}
             />
             <div className="dice-meta">
-              {run.die !== null && (
-                <div
-                  className={`rail-mode ${run.movesLeft <= 0 ? "is-spent" : ""}`}
-                  title={run.diagonal ? "Diagonal moves" : "Straight moves"}
-                >
-                  <strong>{run.movesLeft > 0 ? run.movesLeft : "—"}</strong>
-                  <span
-                    className={`dir-pad ${run.diagonal ? "diag" : "orth"}`}
-                    aria-label={run.diagonal ? "diagonal" : "orthogonal"}
-                  >
-                    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => {
-                      const orth = i === 1 || i === 3 || i === 5 || i === 7;
-                      const diag = i === 0 || i === 2 || i === 6 || i === 8;
-                      const on = run.diagonal ? diag : orth;
-                      return (
-                        <i
-                          key={i}
-                          className={`dir-cell${on ? " on" : ""}${i === 4 ? " you" : ""}`}
-                        />
-                      );
-                    })}
-                  </span>
-                </div>
-              )}
               {featherReady && (
                 <button
                   type="button"
