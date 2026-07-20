@@ -542,9 +542,15 @@ h1 {
 
 /* One board: logo+status+map share map width; rails hug the grid only */
 .play-frame {
-  --board-size: min(calc(100dvh - 10.5rem), calc(100vw - 7.5rem));
+  --grid-line: 2.5px;
+  --grid-gap: 1.5px;
+  /* Leave room for two cell-sized rails + gaps on narrow screens */
+  --board-size: min(calc(100dvh - 10.5rem), calc(100vw * 0.78));
+  /* Same footprint as one map cell (10×10 grid inside border + gaps) */
+  --rail-size: calc(
+    (var(--board-size) - 2 * var(--grid-line) - 9 * var(--grid-gap)) / 10
+  );
   --rail-gap: 0.4rem;
-  --rail-size: clamp(36px, calc((var(--board-size) - 2.75rem) / 6), 48px);
   display: grid;
   grid-template-columns: var(--rail-size) var(--board-size) var(--rail-size);
   column-gap: var(--rail-gap);
@@ -642,9 +648,9 @@ h1 {
   height: var(--rail-size);
   min-width: var(--rail-size);
   min-height: var(--rail-size);
-  padding: 0.15rem;
-  border-radius: 8px;
-  border-width: 2px;
+  padding: 0.1rem;
+  border-radius: 2px;
+  border-width: 1.5px;
 }
 
 .rail-die {
@@ -666,10 +672,10 @@ h1 {
   min-width: var(--rail-size);
   min-height: var(--rail-size);
   box-sizing: border-box;
-  border-radius: 8px;
-  border: 2px solid var(--line);
+  border-radius: 2px;
+  border: 1.5px solid var(--line);
   background: var(--cell);
-  padding: 4px;
+  padding: 3px;
 }
 
 .side-rail .rail-die .dice-face {
@@ -789,8 +795,8 @@ h1 {
 
 .grid {
   display: grid;
-  gap: 1.5px;
-  border: 2.5px solid var(--line);
+  gap: var(--grid-gap, 1.5px);
+  border: var(--grid-line, 2.5px) solid var(--line);
   background: var(--line);
   width: min(100%, calc(100dvh - 14rem), 92vw);
   max-width: 100%;
