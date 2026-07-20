@@ -15,6 +15,7 @@ import {
   legalMoves,
   loadRun,
   openStairsGate,
+  openShop,
   pathTo,
   rerollWithFeather,
   saveRun,
@@ -95,9 +96,10 @@ export function App() {
     let state = current;
     for (let i = 0; i < path.length; i++) {
       const step = path[i]!;
-      const pathEnd = i === path.length - 1;
+      // Chest/stairs only if this step is the cell the player actually tapped
+      const interact = step[0] === dest[0] && step[1] === dest[1];
       const prev = state;
-      state = stepTo(state, step, { pathEnd });
+      state = stepTo(state, step, { interact });
       setRun(state);
       runRef.current = state;
 
@@ -168,6 +170,7 @@ export function App() {
       onDescend={() => setRun(descendStairs(run))}
       onStayAtGate={() => setRun(clearPendingStairs(run))}
       onOpenGate={() => setRun(openStairsGate(run))}
+      onOpenShop={() => setRun(openShop(run))}
       onBuy={(id) => setRun(buyItem(run, id))}
       onCloseShop={() => setRun(closeShop(run))}
       onPotion={() => setRun(usePotion(run))}

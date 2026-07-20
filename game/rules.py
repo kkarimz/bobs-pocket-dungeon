@@ -81,8 +81,8 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "WHEN YOU STOP",
         (
-            "Chest → you may buy once",
-            "Stairs → go to the next floor",
+            "Chest → tap it (or Shop) to buy once",
+            "Stairs → tap them (or Gate) to descend",
         ),
     ),
     (

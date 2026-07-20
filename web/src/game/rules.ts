@@ -119,9 +119,9 @@ export function hintForCell(
   if (cell === EMPTY || cell === ENTRANCE) return null;
   if (cell === WALL) return "Wall — blocked.";
   if (cell === COIN) return "Coin — +1 GOLD.";
-  if (cell === SHOP) return "Merchant — stop here to buy.";
+  if (cell === SHOP) return "Merchant — tap this chest to shop.";
   if (cell === TELEPORTER) return "Portal — enter to warp; turn ends.";
-  if (cell === EXIT) return "Stairs — stop here to descend.";
+  if (cell === EXIT) return "Stairs — tap here to descend.";
   if (/^[1-9]$/.test(cell)) {
     const raw = Number(cell);
     const mon = MONSTER_DAMAGE.find((m) => m.damage === raw);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Coord } from "../game/dungeon";
 import type { RunState } from "../game/engine";
-import { EXIT, SHOP_ITEMS } from "../game/rules";
+import { EXIT, SHOP, SHOP_ITEMS } from "../game/rules";
 import type { ShopItemId } from "../game/rules";
 import { iconUrl } from "../game/icons";
 import { DungeonGrid } from "./DungeonGrid";
@@ -85,6 +85,7 @@ interface Props {
   onDescend: () => void;
   onStayAtGate: () => void;
   onOpenGate: () => void;
+  onOpenShop: () => void;
   onBuy: (id: ShopItemId) => void;
   onCloseShop: () => void;
   onPotion: () => void;
@@ -105,6 +106,7 @@ export function PlayScreen({
   onDescend,
   onStayAtGate,
   onOpenGate,
+  onOpenShop,
   onBuy,
   onCloseShop,
   onPotion,
@@ -147,6 +149,7 @@ export function PlayScreen({
 
   const [px, py] = run.pos;
   const onStairs = !run.pendingStairs && run.grid[py]![px] === EXIT;
+  const onChest = !run.shopOpen && run.grid[py]![px] === SHOP;
   const floorFrom = run.floorIndex + 1;
   const isLast = run.floorIndex + 1 >= run.book.floors.length;
   const floorTo = floorFrom + 1;
@@ -248,6 +251,15 @@ export function PlayScreen({
                   onClick={onOpenGate}
                 >
                   Gate
+                </button>
+              )}
+              {onChest && (
+                <button
+                  type="button"
+                  className="btn tiny rail-action"
+                  onClick={onOpenShop}
+                >
+                  Shop
                 </button>
               )}
             </div>

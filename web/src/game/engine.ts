@@ -373,8 +373,8 @@ function applyDamage(state: RunState, raw: number): number {
 function resolveCell(
   state: RunState,
   pos: Coord,
-  /** True when this step is the end of the chosen path (intentional stop). */
-  pathEnd = true,
+  /** Only interact with chest/stairs when this step is the clicked destination. */
+  interact = false,
 ): RunState {
   const [x, y] = pos;
   const cell = state.grid[y]![x]!;
@@ -414,8 +414,8 @@ function resolveCell(
     next.message = "+1 GOLD.";
     next.floaters = pushFloater(next, "+1 GOLD", "gold");
   } else if (cell === SHOP) {
-    // Object interaction: only when you stop on the chest
-    if (pathEnd) {
+    // Only when the player taps the chest as their destination — not path-through
+    if (interact) {
       next.shopOpen = true;
       next.message = "Merchant.";
       next.floaters = pushFloater(next, "SHOP", "info");
@@ -431,8 +431,7 @@ function resolveCell(
       next.floaters = pushFloater(next, "WHOOSH", "info");
     }
   } else if (cell === EXIT) {
-    // Using the stairs is intentional — only when your path ends here
-    if (pathEnd) {
+    if (interact) {
       next.pendingStairs = true;
       next.movesLeft = 0;
       next.message = "The gate awaits.";
@@ -513,7 +512,7 @@ export function acknowledgeDeath(state: RunState): RunState {
 export function stepTo(
   state: RunState,
   dest: Coord,
-  opts?: { pathEnd?: boolean },
+  opts?: { interact?: boolean },
 ): RunState {
   const legal = adjacentMoves(state);
   if (!legal.some((c) => c[0] === dest[0] && c[1] === dest[1])) return state;
@@ -526,7 +525,8 @@ export function stepTo(
     // while Bob keeps walking; resolveCell prunes stale ones.
     shake: false,
   };
-  next = resolveCell(next, dest, opts?.pathEnd ?? true);
+  // Default false — never open chest/stairs unless walkTo opts in
+  next = resolveCell(next, dest, opts?.interact === true);
   if (next.screen !== "play") return next;
   if (next.movesLeft === 0 && !next.pendingStairs && !next.shopOpen) {
     // Keep short event text; otherwise prompt next roll
@@ -563,6 +563,19 @@ export function openStairsGate(state: RunState): RunState {
     pendingStairs: true,
     movesLeft: 0,
     message: "The gate awaits.",
+  };
+}
+
+/** Open the merchant while standing on a chest (manual interact). */
+export function openShop(state: RunState): RunState {
+  if (state.shopOpen || state.pendingDeath || state.pendingStairs) return state;
+  const [x, y] = state.pos;
+  if (state.grid[y]![x]! !== SHOP) return state;
+  return {
+    ...state,
+    shopOpen: true,
+    message: "Merchant.",
+    floaters: [{ id: Date.now(), text: "SHOP", kind: "info" }],
   };
 }
 
