@@ -592,6 +592,102 @@ export function stepTo(
   return next;
 }
 
+/** Debug: list every in-bounds cell (for free-move highlighting). */
+export function debugAllCells(state: RunState): Coord[] {
+  const cols = state.grid[0]!.length;
+  const rows = state.grid.length;
+  const out: Coord[] = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) out.push([x, y]);
+  }
+  return out;
+}
+
+/**
+ * Debug: teleport to any cell and interact (open chest / stairs / fight).
+ * Does not spend move points.
+ */
+export function debugWarp(state: RunState, dest: Coord): RunState {
+  const cols = state.grid[0]!.length;
+  const rows = state.grid.length;
+  const [x, y] = dest;
+  if (x < 0 || y < 0 || x >= cols || y >= rows) return state;
+  if (
+    state.shopOpen ||
+    state.pendingStairs ||
+    state.pendingDeath ||
+    state.pendingMimic
+  ) {
+    return state;
+  }
+  let next: RunState = {
+    ...state,
+    // Spend the turn so chests/stairs interact the same as a final step
+    movesLeft: 0,
+    visitedThisTurn: [...state.visitedThisTurn, keyOf(dest)],
+    shake: false,
+    message: `Debug warp → ${x},${y}`,
+  };
+  next = resolveCell(next, dest, true);
+  return next;
+}
+
+/** Debug cheats for the testing panel. */
+export function debugGiveGold(state: RunState, amount = 10): RunState {
+  const next: RunState = {
+    ...state,
+    gold: state.gold + amount,
+    message: `Debug +${amount} GOLD.`,
+  };
+  next.floaters = pushFloater(next, `+${amount} GOLD`, "gold");
+  return next;
+}
+
+export function debugHeal(state: RunState, amount = 5): RunState {
+  const next: RunState = {
+    ...state,
+    hp: state.hp + amount,
+    message: `Debug +${amount} HP.`,
+  };
+  next.floaters = pushFloater(next, `+${amount} HP`, "heal");
+  return next;
+}
+
+export function debugGiveItems(state: RunState): RunState {
+  return {
+    ...state,
+    inventory: {
+      "healing-potion": true,
+      "iron-shield": true,
+      "lucky-feather": true,
+      "blackpowder-bomb": true,
+      "skeleton-key": true,
+      usedPotion: false,
+      usedFeather: false,
+      usedBomb: false,
+      usedKey: false,
+    },
+    message: "Debug: all items granted.",
+    floaters: pushFloater(state, "ITEMS", "info"),
+  };
+}
+
+export function debugSetMoves(state: RunState, n = 6): RunState {
+  return {
+    ...state,
+    die: n,
+    movesLeft: n,
+    diagonal: n % 2 === 1,
+    visitedThisTurn: [keyOf(state.pos)],
+    message: `Debug: ${n} moves.`,
+  };
+}
+
+/** Debug: jump to the next floor (same as descending the gate). */
+export function debugNextFloor(state: RunState): RunState {
+  return descendStairs({ ...state, pendingStairs: true, pendingMimic: null });
+}
+
 export function clearFloaters(state: RunState): RunState {
   return { ...state, floaters: [], shake: false };
 }

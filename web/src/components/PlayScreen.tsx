@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { Coord } from "../game/dungeon";
 import type { RunState } from "../game/engine";
 import { EXIT, SHOP, SHOP_ITEMS } from "../game/rules";
@@ -96,6 +96,8 @@ interface Props {
   onQuit: () => void;
   onAcknowledgeDeath: () => void;
   onAcknowledgeMimic: () => void;
+  revealSecrets?: boolean;
+  debugPanel?: ReactNode;
 }
 
 export function PlayScreen({
@@ -118,6 +120,8 @@ export function PlayScreen({
   onQuit,
   onAcknowledgeDeath,
   onAcknowledgeMimic,
+  revealSecrets = false,
+  debugPanel,
 }: Props) {
   const [rolling, setRolling] = useState(false);
   const [rerolling, setRerolling] = useState(false);
@@ -212,6 +216,7 @@ export function PlayScreen({
             legal={legal}
             pathPreview={[]}
             walking={walking}
+            revealSecrets={revealSecrets}
             onGoTo={onGoTo}
             onInspect={showInspect}
           />
@@ -418,6 +423,8 @@ export function PlayScreen({
       {run.shopOpen && (
         <MerchantModal run={run} onBuy={onBuy} onClose={onCloseShop} />
       )}
+
+      {debugPanel}
     </div>
   );
 }

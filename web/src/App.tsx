@@ -9,6 +9,13 @@ import {
   clearSave,
   closeShop,
   createNewRun,
+  debugAllCells,
+  debugGiveGold,
+  debugGiveItems,
+  debugHeal,
+  debugNextFloor,
+  debugSetMoves,
+  debugWarp,
   descendStairs,
   endTurnIfStuck,
   hasSave,
@@ -27,9 +34,15 @@ import {
 import type { RunState } from "./game/engine";
 import type { Coord } from "./game/dungeon";
 import { DEFAULT_FLOORS } from "./game/rules";
+import {
+  isDebugEnabled,
+  loadDebugFlags,
+  type DebugFlags,
+} from "./game/debug";
 import { TitleScreen } from "./components/TitleScreen";
 import { PlayScreen } from "./components/PlayScreen";
 import { StatsScreen } from "./components/StatsScreen";
+import { DebugPanel } from "./components/DebugPanel";
 
 type AppMode = "title" | "play";
 
@@ -41,6 +54,10 @@ export function App() {
   const [mode, setMode] = useState<AppMode>("title");
   const [run, setRun] = useState<RunState | null>(null);
   const [walking, setWalking] = useState(false);
+  const debugOn = isDebugEnabled();
+  const [debugFlags, setDebugFlags] = useState<DebugFlags>(() =>
+    debugOn ? loadDebugFlags() : { freeMove: false, revealSecrets: false },
+  );
   const runRef = useRef(run);
   runRef.current = run;
 
@@ -53,6 +70,7 @@ export function App() {
   // Slight delay so the roll face + direction pad paint before we clear moves.
   useEffect(() => {
     if (!run || walking || run.screen !== "play" || run.pendingDeath) return;
+    if (debugOn && debugFlags.freeMove) return;
     if (!run.movesLeft) return;
     const fixed = endTurnIfStuck(run);
     if (fixed === run) return;
@@ -65,7 +83,7 @@ export function App() {
       });
     }, 450);
     return () => window.clearTimeout(t);
-  }, [run, walking]);
+  }, [run, walking, debugOn, debugFlags.freeMove]);
 
   const startNew = () => {
     // Fresh entropy every run so layouts never repeat across sessions
@@ -90,6 +108,14 @@ export function App() {
     const current = runRef.current;
     if (!current || walking || current.screen !== "play") return;
     if (current.startingHp <= 0) return;
+
+    if (debugOn && debugFlags.freeMove) {
+      const next = debugWarp(current, dest);
+      setRun(next);
+      runRef.current = next;
+      return;
+    }
+
     const path = pathTo(current, dest);
     if (!path?.length) return;
 
@@ -121,7 +147,8 @@ export function App() {
           state.movesLeft === prev.movesLeft);
       if (stop) {
         // Let the death / hit feedback sit a beat before the overlay owns the screen
-        if (state.pendingDeath || eventful) await sleep(420);
+        if (state.pendingDeath || state.pendingMimic || eventful)
+          await sleep(420);
         break;
       }
       await sleep(eventful ? 520 : 90);
@@ -157,14 +184,20 @@ export function App() {
   }
 
   const needsHp = run.startingHp <= 0;
+  const freeMove = debugOn && debugFlags.freeMove;
   const moves =
-    walking || needsHp || run.pendingDeath ? [] : legalMoves(run);
+    walking || needsHp || run.pendingDeath || run.pendingMimic
+      ? []
+      : freeMove
+        ? debugAllCells(run)
+        : legalMoves(run);
 
   return (
     <PlayScreen
       run={run}
       legal={moves}
       walking={walking}
+      revealSecrets={debugOn && debugFlags.revealSecrets}
       onStartingHp={(v) => setRun(applyStartingHp(run, v))}
       onRolled={(v) => setRun(startTurnRoll(run, v))}
       onReroll={(v) => setRun(rerollWithFeather(run, v))}
@@ -185,6 +218,19 @@ export function App() {
         setRun(null);
         setMode("title");
       }}
+      debugPanel={
+        debugOn ? (
+          <DebugPanel
+            flags={debugFlags}
+            onFlags={setDebugFlags}
+            onGiveGold={() => setRun(debugGiveGold(run))}
+            onHeal={() => setRun(debugHeal(run))}
+            onGiveItems={() => setRun(debugGiveItems(run))}
+            onSetMoves={() => setRun(debugSetMoves(run))}
+            onNextFloor={() => setRun(debugNextFloor(run))}
+          />
+        ) : null
+      }
     />
   );
 }

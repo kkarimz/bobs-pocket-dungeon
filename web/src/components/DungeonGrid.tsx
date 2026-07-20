@@ -9,6 +9,7 @@ interface Props {
   legal: Coord[];
   pathPreview: Coord[];
   walking: boolean;
+  revealSecrets?: boolean;
   onGoTo: (c: Coord) => void;
   onInspect: (hint: string) => void;
 }
@@ -18,6 +19,7 @@ export function DungeonGrid({
   legal,
   pathPreview,
   walking,
+  revealSecrets = false,
   onGoTo,
   onInspect,
 }: Props) {
@@ -42,7 +44,11 @@ export function DungeonGrid({
       onGoTo([x, y]);
       return;
     }
-    const hint = hintForCell(cell, { isPlayer: isPos, hasShield });
+    const hint = hintForCell(cell, {
+      isPlayer: isPos,
+      hasShield,
+      revealSecrets,
+    });
     if (hint) onInspect(hint);
   };
 
@@ -65,10 +71,10 @@ export function DungeonGrid({
               ? "bob"
               : cell === "@"
                 ? null
-                : iconForCell(cell);
+                : iconForCell(cell, { revealSecrets });
             const canInspect =
               isPos ||
-              (!!iconForCell(cell) && cell !== "@") ||
+              (!!iconForCell(cell, { revealSecrets }) && cell !== "@") ||
               cell === "#";
             return (
               <button
@@ -82,6 +88,7 @@ export function DungeonGrid({
                   hasMoves && !isLegal && !isPos ? "cell-dim" : "",
                   isVisited && !isPos ? "cell-visited" : "",
                   cell === "#" ? "cell-wall" : "",
+                  revealSecrets && cell === "M" ? "cell-debug-mimic" : "",
                   canInspect && !(hasMoves && isLegal) ? "cell-inspectable" : "",
                 ]
                   .filter(Boolean)
@@ -93,8 +100,11 @@ export function DungeonGrid({
                 aria-label={
                   isLegal && hasMoves
                     ? `Go to ${x},${y}`
-                    : hintForCell(cell, { isPlayer: isPos, hasShield }) ??
-                      `Cell ${x},${y}`
+                    : hintForCell(cell, {
+                        isPlayer: isPos,
+                        hasShield,
+                        revealSecrets,
+                      }) ?? `Cell ${x},${y}`
                 }
               >
                 {icon ? (

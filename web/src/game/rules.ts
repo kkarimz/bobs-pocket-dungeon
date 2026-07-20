@@ -109,7 +109,11 @@ export const CELL_ICONS: Record<string, string> = {
   T: "teleport",
 };
 
-export function iconForCell(val: string): string | null {
+export function iconForCell(
+  val: string,
+  opts?: { revealSecrets?: boolean },
+): string | null {
+  if (val === MIMIC && opts?.revealSecrets) return "mimic";
   if (val in CELL_ICONS) return CELL_ICONS[val]!;
   if (val in MONSTER_ICONS) return MONSTER_ICONS[val]!;
   return null;
@@ -123,14 +127,18 @@ export function monsterDamage(val: string): number {
 /** Short inspect text for a grid cell (tap when not moving there). */
 export function hintForCell(
   cell: string,
-  opts?: { isPlayer?: boolean; hasShield?: boolean },
+  opts?: { isPlayer?: boolean; hasShield?: boolean; revealSecrets?: boolean },
 ): string | null {
   if (opts?.isPlayer) return "Bob — you are here.";
   if (cell === EMPTY || cell === ENTRANCE) return null;
   if (cell === WALL) return "Wall — blocked.";
   if (cell === COIN) return "Coin — +1 GOLD.";
-  if (cell === SHOP || cell === MIMIC)
-    return "Chest — end your move here to open it.";
+  if (cell === SHOP) return "Chest — end your move here to open it.";
+  if (cell === MIMIC) {
+    return opts?.revealSecrets
+      ? "Mimic (debug) — tap to open; bites −2 HP."
+      : "Chest — end your move here to open it.";
+  }
   if (cell === TELEPORTER) return "Portal — enter to warp; turn ends.";
   if (cell === EXIT) return "Stairs — tap here to descend.";
   if (/^[1-9]$/.test(cell)) {
