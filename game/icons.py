@@ -24,6 +24,7 @@ CELL_ICONS = {
     "#": "wall",
     "o": "coin",
     "S": "shop",
+    "M": "mimic",
     "T": "teleport",
 }
 
@@ -46,7 +47,7 @@ LEGEND_ROW1 = (
 LEGEND_ROW2 = (
     ("coin", "+1"),
     ("slime", "−1 HP"),
-    ("imp", "−2 HP"),
+    ("goblin", "−2 HP"),
     ("orc", "−3 HP"),
     ("dragon", "−4 HP"),
 )
@@ -57,14 +58,14 @@ LEGEND_ICONS = LEGEND_ROW1 + (("coin", "+1"),)
 # Shown on rules page and floor legend — fixed damage by creature type
 MONSTER_DAMAGE = (
     ("slime", "SLIME", 1),
-    ("imp", "IMP", 2),
+    ("goblin", "GOBLIN", 2),
     ("orc", "ORC", 3),
     ("dragon", "DRAGON", 4),
 )
 
 MONSTER_ICONS = {
     "1": "slime",
-    "2": "imp",
+    "2": "goblin",
     "3": "orc",
     "4": "dragon",
 }

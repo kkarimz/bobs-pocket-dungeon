@@ -51,11 +51,12 @@ Layout seeds match between the PDF and the web app (same dungeon generator).
 ## The crawl
 
 - **Bob** — the hooded adventurer and position marker
-- Monsters: slime (−1), imp (−2), orc (−3), dragon (−4)
+- Monsters: slime (−1), goblin (−2), orc (−3), dragon (−4)
 - Merchant: potion, shield, lucky feather, bomb, and key
 - Stairs, chests, gold, and portals
 - Odd rolls = diagonal only; no cutting wall corners (D&D style)
 - Enter monster / coin / portal; **stop** on chest or stairs to use them
+- Two chests per floor: one merchant, one **mimic** (−2 HP)
 - Walls are placed in L-shaped blocks for clearer corridors
 
 ## Printing on 4×6 photo paper

@@ -10,7 +10,11 @@ export const ENTRANCE = "@";
 export const EXIT = ">";
 export const COIN = "o";
 export const SHOP = "S";
+export const MIMIC = "M";
 export const TELEPORTER = "T";
+
+/** Mimic bite when you stop on the fake chest (shield/bomb apply). */
+export const MIMIC_DAMAGE = 2;
 
 export type ShopItemId =
   | "healing-potion"
@@ -73,7 +77,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
 
 export const MONSTER_ICONS: Record<string, string> = {
   "1": "slime",
-  "2": "imp",
+  "2": "goblin",
   "3": "orc",
   "4": "dragon",
 };
@@ -85,7 +89,7 @@ export const MONSTER_DAMAGE: readonly {
   damage: number;
 }[] = [
   { icon: "slime", name: "Slime", damage: 1 },
-  { icon: "imp", name: "Imp", damage: 2 },
+  { icon: "goblin", name: "Goblin", damage: 2 },
   { icon: "orc", name: "Orc", damage: 3 },
   { icon: "dragon", name: "Dragon", damage: 4 },
 ];
@@ -96,6 +100,7 @@ export const CELL_ICONS: Record<string, string> = {
   "#": "wall",
   o: "coin",
   S: "shop",
+  M: "mimic",
   T: "teleport",
 };
 
@@ -119,7 +124,8 @@ export function hintForCell(
   if (cell === EMPTY || cell === ENTRANCE) return null;
   if (cell === WALL) return "Wall — blocked.";
   if (cell === COIN) return "Coin — +1 GOLD.";
-  if (cell === SHOP) return "Merchant — tap this chest to shop.";
+  if (cell === SHOP) return "Merchant chest — end your move here to shop.";
+  if (cell === MIMIC) return "Mimic! End your move here and it bites (−2 HP).";
   if (cell === TELEPORTER) return "Portal — enter to warp; turn ends.";
   if (cell === EXIT) return "Stairs — tap here to descend.";
   if (/^[1-9]$/.test(cell)) {

@@ -12,7 +12,10 @@
   --legal-fill: #d5e8c8;
   --danger: #c75a48;
   --muted: #a09078;
-  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  /* Carved stone titles + old-book body (woodcut / parchment) */
+  --font-display: "Cinzel", "Palatino Linotype", Palatino, serif;
+  --font-body: "IM Fell English", "Palatino Linotype", Palatino, Georgia, serif;
+  font-family: var(--font-body);
   color: var(--ink);
   background: var(--paper);
   line-height: 1.35;
@@ -68,8 +71,10 @@ input {
 }
 
 h1 {
+  font-family: var(--font-display);
   font-size: 1.55rem;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-align: center;
   margin: 0.25rem 0;
 }
@@ -97,8 +102,9 @@ h1 {
   padding: 0.55rem 1rem;
   border-radius: 4px;
   cursor: pointer;
+  font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
 }
 
 .btn:disabled {
@@ -158,8 +164,9 @@ h1 {
 
 .rules-brief h2 {
   margin: 0 0 0.4rem;
+  font-family: var(--font-display);
   font-size: 0.95rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .rules-brief ul {
@@ -170,8 +177,9 @@ h1 {
 
 .rules-chart-title {
   margin: 0.75rem 0 0.4rem;
+  font-family: var(--font-display);
   font-size: 0.8rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--muted);
 }
 
@@ -301,41 +309,15 @@ h1 {
 
 .dice-face.can-roll {
   border-color: var(--accent);
-  animation: die-beckon 1.4s ease-in-out infinite;
+  box-shadow:
+    0 2px 0 #8a6230,
+    0 0 0 1px rgba(232, 180, 90, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .dice-face.can-roll:active {
-  animation: none;
   transform: translateY(2px) scale(0.96);
   box-shadow: 0 1px 0 #8a6230;
-}
-
-@keyframes die-beckon {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    box-shadow:
-      0 2px 0 #8a6230,
-      0 0 6px rgba(232, 180, 90, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  }
-  50% {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow:
-      0 5px 0 #8a6230,
-      0 0 14px rgba(232, 180, 90, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dice-face.can-roll {
-    animation: none;
-    box-shadow:
-      0 2px 0 #8a6230,
-      0 0 10px rgba(232, 180, 90, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  }
 }
 
 .dice-roller.size-lg .dice-face {
@@ -355,11 +337,11 @@ h1 {
 }
 
 .die-num {
-  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 2.15rem;
   font-weight: 900;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
   color: var(--ink-deep);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   font-variant-numeric: tabular-nums;
@@ -370,18 +352,20 @@ h1 {
 }
 
 .die-roll-label {
-  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   color: var(--ink-deep);
-  opacity: 0.55;
+  opacity: 0.82;
   line-height: 1;
+  text-indent: 0.2em; /* optical center with letter-spacing */
 }
 
 .dice-roller.size-lg .die-roll-label {
-  font-size: 1rem;
-  letter-spacing: 0.16em;
+  font-size: 1.2rem;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
 }
 
 .die-center {
@@ -391,62 +375,88 @@ h1 {
   place-items: center;
 }
 
-.die-mode-dots {
+.die-mode-arrows {
   position: absolute;
-  inset: 3px;
+  inset: 2px;
   pointer-events: none;
   z-index: 0;
 }
 
-.die-mode-dots .dot {
+.die-mode-arrows .arr {
   position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 3px rgba(232, 180, 90, 0.55);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  filter: drop-shadow(0 0 1px rgba(138, 98, 48, 0.45));
 }
 
-.die-mode-dots .n {
-  top: 0;
+/* Cardinal (even / straight) */
+.die-mode-arrows .n {
+  top: 1px;
   left: 50%;
+  border-width: 0 4px 6px 4px;
+  border-color: transparent transparent var(--accent) transparent;
   transform: translateX(-50%);
 }
-.die-mode-dots .e {
-  right: 0;
+.die-mode-arrows .e {
+  right: 1px;
   top: 50%;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent var(--accent);
   transform: translateY(-50%);
 }
-.die-mode-dots .s {
-  bottom: 0;
+.die-mode-arrows .s {
+  bottom: 1px;
   left: 50%;
+  border-width: 6px 4px 0 4px;
+  border-color: var(--accent) transparent transparent transparent;
   transform: translateX(-50%);
 }
-.die-mode-dots .w {
-  left: 0;
+.die-mode-arrows .w {
+  left: 1px;
   top: 50%;
+  border-width: 4px 6px 4px 0;
+  border-color: transparent var(--accent) transparent transparent;
   transform: translateY(-50%);
 }
-.die-mode-dots .nw {
-  top: 0;
-  left: 0;
+
+/* Diagonal (odd) — same chevrons, rotated */
+.die-mode-arrows .nw {
+  top: 2px;
+  left: 2px;
+  border-width: 0 3.5px 5.5px 3.5px;
+  border-color: transparent transparent var(--accent) transparent;
+  transform: rotate(-45deg);
 }
-.die-mode-dots .ne {
-  top: 0;
-  right: 0;
+.die-mode-arrows .ne {
+  top: 2px;
+  right: 2px;
+  border-width: 0 3.5px 5.5px 3.5px;
+  border-color: transparent transparent var(--accent) transparent;
+  transform: rotate(45deg);
 }
-.die-mode-dots .sw {
-  bottom: 0;
-  left: 0;
+.die-mode-arrows .sw {
+  bottom: 2px;
+  left: 2px;
+  border-width: 0 3.5px 5.5px 3.5px;
+  border-color: transparent transparent var(--accent) transparent;
+  transform: rotate(-135deg);
 }
-.die-mode-dots .se {
-  bottom: 0;
-  right: 0;
+.die-mode-arrows .se {
+  bottom: 2px;
+  right: 2px;
+  border-width: 0 3.5px 5.5px 3.5px;
+  border-color: transparent transparent var(--accent) transparent;
+  transform: rotate(135deg);
 }
 
 .dice-face.is-idle {
   background:
-    linear-gradient(160deg, #efe6d0 0%, #e2d6bc 50%, #d0c3a6 100%);
+    linear-gradient(160deg, #f7efdc 0%, var(--cell) 50%, #dccfb3 100%);
+}
+
+.dice-face.is-idle .die-mode-arrows {
+  display: none;
 }
 
 .dice-hint {
@@ -539,10 +549,11 @@ h1 {
 }
 
 .floater {
-  font-weight: 900;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: 1.25rem;
-  letter-spacing: 0.04em;
-  animation: floater-up 1s ease-out forwards;
+  letter-spacing: 0.06em;
+  animation: floater-up 2.4s ease-out forwards;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
 }
 
@@ -567,13 +578,17 @@ h1 {
     opacity: 0;
     transform: translateY(12px) scale(0.9);
   }
-  20% {
+  12% {
     opacity: 1;
-    transform: translateY(0) scale(1.05);
+    transform: translateY(0) scale(1.08);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-28px) scale(1);
+    transform: translateY(-36px) scale(0.98);
   }
 }
 
@@ -647,17 +662,24 @@ h1 {
 
 .play-title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 1.35rem;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   line-height: 1.1;
   text-align: left;
 }
 
 .play-logo {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   flex: 0 0 auto;
+  background: var(--cell);
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  padding: 0.28rem;
+  box-sizing: content-box;
 }
 
 .map-column .grid-wrap {
@@ -771,17 +793,33 @@ h1 {
 }
 
 .side-rail .rail-die .die-roll-label {
-  font-size: clamp(0.4rem, calc(var(--rail-size) * 0.18), 0.58rem);
-  letter-spacing: 0.08em;
+  font-size: clamp(0.55rem, calc(var(--rail-size) * 0.28), 0.78rem);
+  letter-spacing: 0.12em;
+  text-indent: 0.12em;
+  opacity: 0.88;
 }
 
-.side-rail .rail-die .die-mode-dots {
-  inset: 2px;
+.side-rail .rail-die .die-mode-arrows {
+  inset: 1px;
 }
 
-.side-rail .rail-die .die-mode-dots .dot {
-  width: 4px;
-  height: 4px;
+.side-rail .rail-die .die-mode-arrows .n {
+  border-width: 0 3px 4.5px 3px;
+}
+.side-rail .rail-die .die-mode-arrows .e {
+  border-width: 3px 0 3px 4.5px;
+}
+.side-rail .rail-die .die-mode-arrows .s {
+  border-width: 4.5px 3px 0 3px;
+}
+.side-rail .rail-die .die-mode-arrows .w {
+  border-width: 3px 4.5px 3px 0;
+}
+.side-rail .rail-die .die-mode-arrows .nw,
+.side-rail .rail-die .die-mode-arrows .ne,
+.side-rail .rail-die .die-mode-arrows .sw,
+.side-rail .rail-die .die-mode-arrows .se {
+  border-width: 0 2.5px 4px 2.5px;
 }
 
 .dice-meta {
@@ -955,17 +993,28 @@ h1 {
 }
 
 .play-screen .stat-rail .hud-stat strong {
-  font-size: clamp(0.65rem, calc(var(--rail-size) * 0.32), 0.95rem);
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, calc(var(--rail-size) * 0.48), 1.45rem);
+  font-weight: 700;
   line-height: 1.05;
+  letter-spacing: 0.02em;
 }
 
 .play-screen .stat-rail .hud-stat span,
 .play-screen .stat-rail .hud-menu span {
-  font-size: clamp(0.42rem, calc(var(--rail-size) * 0.2), 0.58rem);
-  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  font-size: clamp(0.58rem, calc(var(--rail-size) * 0.28), 0.82rem);
+  letter-spacing: 0.06em;
+  font-weight: 700;
 }
 
 .play-screen .stat-rail .hud-menu {
+  color: var(--ink-deep);
+}
+
+.play-screen .stat-rail .hud-menu span {
+  font-size: clamp(0.7rem, calc(var(--rail-size) * 0.34), 1rem);
+  letter-spacing: 0.08em;
   color: var(--ink-deep);
 }
 
@@ -1020,8 +1069,10 @@ h1 {
 
 .descend-gate h2 {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 1.55rem;
-  letter-spacing: 0.12em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 
 .descend-gate p {
@@ -1103,8 +1154,10 @@ h1 {
 
 .death-card h2 {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 1.55rem;
-  letter-spacing: 0.12em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   color: #ff8a7a;
 }
 
@@ -1156,8 +1209,10 @@ h1 {
 
 .hp-setup-card h2 {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 1.35rem;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   color: var(--ink);
 }
 
@@ -1250,7 +1305,10 @@ h1 {
 
 .modal h2 {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   letter-spacing: 0.04em;
 }
 

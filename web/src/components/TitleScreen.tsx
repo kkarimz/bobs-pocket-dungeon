@@ -34,7 +34,10 @@ export function TitleScreen({ hasContinue, onNew, onContinue }: Props) {
             Enter a space: monsters hurt (chart), coins +1 GOLD, portals warp and
             end the turn.
           </li>
-          <li>Stop on / tap a chest to shop; tap stairs to go deeper.</li>
+          <li>
+            Two chests each floor: a merchant, and a mimic (−2 HP when you stop
+            on it). Tap stairs to go deeper.
+          </li>
           <li>At 0 HP you die, reset HP/GOLD, skip to the next floor, and continue.</li>
         </ul>
         <h3 className="rules-chart-title">MONSTER DAMAGE</h3>

@@ -280,11 +280,11 @@ def draw_shop(c: canvas.Canvas, book: Book) -> None:
     c.drawCentredString(PAGE_W / 2, top, "DUNGEON MERCHANT")
     draw_icon(c, "shop", PAGE_W / 2 - 1.35 * inch, top + 0.04 * inch, 0.28 * inch, center=True)
 
-    c.setFont("Helvetica", 8)
+    c.setFont("Helvetica", 7.5)
     c.drawCentredString(
         PAGE_W / 2,
-        top - 0.28 * inch,
-        "Buy when you cross a chest. Each item may be bought once.",
+        top - 0.26 * inch,
+        "Stop on the merchant chest to buy. Mimics bite (−2 HP).",
     )
 
     y = top - 0.52 * inch

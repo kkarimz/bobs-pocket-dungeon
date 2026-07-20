@@ -10,6 +10,8 @@ import {
   DEFAULT_FLOORS,
   EMPTY,
   EXIT,
+  MIMIC,
+  MIMIC_DAMAGE,
   SHOP,
   SHOP_ITEMS,
   STARTING_COINS,
@@ -70,6 +72,9 @@ export interface RunState {
 }
 
 export const SAVE_KEY = "bobs-pocket-dungeon-save-v1";
+
+/** How long floaters stay in state (must match CSS animation). */
+const FLOATER_MS = 2400;
 
 function keyOf(c: Coord): string {
   return `${c[0]},${c[1]}`;
@@ -161,15 +166,17 @@ export function rerollWithFeather(state: RunState, dieValue?: number): RunState 
     return state;
   }
   const die = dieValue ?? rollD6();
-  return {
+  const next: RunState = {
     ...state,
     die,
     movesLeft: die,
     diagonal: die % 2 === 1,
     inventory: { ...state.inventory, usedFeather: true },
     visitedThisTurn: [keyOf(state.pos)],
-    message: "Tap a cell to move.",
+    message: "Feather reroll!",
   };
+  next.floaters = pushFloater(next, "REROLL", "info");
+  return next;
 }
 
 export function legalMoves(state: RunState): Coord[] {
@@ -201,7 +208,7 @@ export function endTurnIfStuck(state: RunState): RunState {
     movesLeft: 0,
     message: `No ${mode} steps. Roll again.`,
     floaters: [
-      ...state.floaters.filter((f) => Date.now() - f.id < 1200),
+      ...state.floaters.filter((f) => Date.now() - f.id < FLOATER_MS),
       {
         id: Date.now() + Math.random(),
         text: state.diagonal ? "DIAGONAL" : "STRAIGHT",
@@ -236,7 +243,8 @@ function stepNeighbors(
   for (const n of neighbors(pos, cols, rows, other)) {
     if (other === "diag" && !canEnterDiagonally(pos, n, grid)) continue;
     const cell = grid[n[1]]![n[0]]!;
-    if (cell !== EXIT && cell !== SHOP && cell !== TELEPORTER) continue;
+    if (cell !== EXIT && cell !== SHOP && cell !== MIMIC && cell !== TELEPORTER)
+      continue;
     const k = keyOf(n);
     if (seen.has(k)) continue;
     seen.add(k);
@@ -382,7 +390,7 @@ function resolveCell(
     ...state,
     pos: [...pos] as Coord,
     shake: false,
-    floaters: state.floaters.filter((f) => Date.now() - f.id < 1200),
+    floaters: state.floaters.filter((f) => Date.now() - f.id < FLOATER_MS),
   };
   const grid = cloneGrid(state.grid);
 
@@ -414,11 +422,38 @@ function resolveCell(
     next.message = "+1 GOLD.";
     next.floaters = pushFloater(next, "+1 GOLD", "gold");
   } else if (cell === SHOP) {
-    // Only when the player taps the chest as their destination — not path-through
-    if (interact) {
+    // Only when this step is the tapped destination AND spends the last move
+    if (interact && next.movesLeft === 0) {
       next.shopOpen = true;
       next.message = "Merchant.";
       next.floaters = pushFloater(next, "SHOP", "info");
+    }
+  } else if (cell === MIMIC) {
+    // Looks like a chest — bites only when you stop to open it
+    if (interact && next.movesLeft === 0) {
+      const raw = MIMIC_DAMAGE;
+      const dmg = applyDamage(next, raw);
+      next.hp = Math.max(0, next.hp - dmg);
+      grid[y]![x] = EMPTY;
+      if (next.bombArmed) {
+        next.inventory = { ...next.inventory, usedBomb: true };
+        next.bombArmed = false;
+        next.message =
+          dmg === 0 ? "Bomb ignored the mimic!" : `Mimic! −${dmg} HP.`;
+        next.floaters = pushFloater(
+          next,
+          dmg === 0 ? "BLOCKED" : `−${dmg}`,
+          dmg === 0 ? "info" : "dmg",
+        );
+      } else {
+        next.message = dmg > 0 ? `Mimic! −${dmg} HP.` : "Mimic shrugged.";
+        if (dmg > 0) {
+          next.floaters = pushFloater(next, `−${dmg} HP`, "dmg");
+          next.shake = true;
+        } else {
+          next.floaters = pushFloater(next, "MIMIC", "info");
+        }
+      }
     }
   } else if (cell === TELEPORTER) {
     const portals = findPortals(grid);
@@ -566,9 +601,10 @@ export function openStairsGate(state: RunState): RunState {
   };
 }
 
-/** Open the merchant while standing on a chest (manual interact). */
+/** Open the merchant only after your final step landed on the chest. */
 export function openShop(state: RunState): RunState {
   if (state.shopOpen || state.pendingDeath || state.pendingStairs) return state;
+  if (state.movesLeft > 0) return state;
   const [x, y] = state.pos;
   if (state.grid[y]![x]! !== SHOP) return state;
   return {
@@ -618,12 +654,14 @@ export function buyItem(state: RunState, id: ShopItemId): RunState {
   if (state.gold < item.cost) {
     return { ...state, message: "Not enough gold." };
   }
-  return {
+  const next: RunState = {
     ...state,
     gold: state.gold - item.cost,
     inventory: { ...state.inventory, [id]: true },
     message: `Bought ${item.name}.`,
   };
+  next.floaters = pushFloater(next, "BOUGHT", "gold");
+  return next;
 }
 
 export function closeShop(state: RunState): RunState {
@@ -634,34 +672,42 @@ export function usePotion(state: RunState): RunState {
   if (!state.inventory["healing-potion"] || state.inventory.usedPotion) {
     return state;
   }
-  return {
+  const next: RunState = {
     ...state,
     hp: state.hp + 3,
     inventory: { ...state.inventory, usedPotion: true },
     message: "Potion: +3 HP.",
   };
+  next.floaters = pushFloater(next, "+3 HP", "heal");
+  return next;
 }
 
 export function armBomb(state: RunState): RunState {
   if (!state.inventory["blackpowder-bomb"] || state.inventory.usedBomb) {
     return state;
   }
-  return {
+  const armed = !state.bombArmed;
+  const next: RunState = {
     ...state,
-    bombArmed: !state.bombArmed,
-    message: state.bombArmed ? "Bomb cancelled." : "Bomb armed.",
+    bombArmed: armed,
+    message: armed ? "Bomb armed." : "Bomb cancelled.",
   };
+  next.floaters = pushFloater(next, armed ? "BOMB READY" : "BOMB OFF", "info");
+  return next;
 }
 
 export function armKey(state: RunState): RunState {
   if (!state.inventory["skeleton-key"] || state.inventory.usedKey) {
     return state;
   }
-  return {
+  const armed = !state.keyArmed;
+  const next: RunState = {
     ...state,
-    keyArmed: !state.keyArmed,
-    message: state.keyArmed ? "Key cancelled." : "Key armed.",
+    keyArmed: armed,
+    message: armed ? "Key armed." : "Key cancelled.",
   };
+  next.floaters = pushFloater(next, armed ? "KEY READY" : "KEY OFF", "info");
+  return next;
 }
 
 export function saveRun(state: RunState): void {

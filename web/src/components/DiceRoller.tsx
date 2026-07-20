@@ -12,13 +12,13 @@ interface Props {
   hint?: string;
   /** Compact die for the side rail */
   variant?: "default" | "rail";
-  /** Even = straight, odd = diagonal — lights edge/corner dots */
+  /** Even = straight, odd = diagonal — edge/corner arrows */
   diagonal?: boolean;
   /** Remaining steps this turn (shown while moving) */
   movesLeft?: number;
 }
 
-/** Tap to roll — number tile with tiny edge/corner mode dots. */
+/** Tap to roll — number tile with tiny direction arrows. */
 export function DiceRoller({
   rolling,
   value,
@@ -102,20 +102,20 @@ export function DiceRoller({
         }
       >
         {modeActive && (
-          <span className="die-mode-dots" aria-hidden>
+          <span className="die-mode-arrows" aria-hidden>
             {diagonal ? (
               <>
-                <i className="dot nw" />
-                <i className="dot ne" />
-                <i className="dot sw" />
-                <i className="dot se" />
+                <i className="arr nw" />
+                <i className="arr ne" />
+                <i className="arr sw" />
+                <i className="arr se" />
               </>
             ) : (
               <>
-                <i className="dot n" />
-                <i className="dot e" />
-                <i className="dot s" />
-                <i className="dot w" />
+                <i className="arr n" />
+                <i className="arr e" />
+                <i className="arr s" />
+                <i className="arr w" />
               </>
             )}
           </span>

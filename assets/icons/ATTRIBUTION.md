@@ -12,7 +12,7 @@ Attribution: Icons by Lorc and Delapouite. Available on https://game-icons.net
 | wall.png | stone-wall | Delapouite |
 | coin.png | crown-coin | Lorc |
 | slime.png | slime | Delapouite |
-| imp.png | imp-laugh | Lorc |
+| goblin.png | goblin-head | Delapouite |
 | orc.png | orc-head | Delapouite |
 | dragon.png | dragon-head | Lorc |
 | shop.png | locked-chest | Lorc |

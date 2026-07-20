@@ -14,6 +14,7 @@ from .rules import (
     EXIT,
     GRID_COLS,
     GRID_ROWS,
+    MIMIC,
     SHOP,
     STARTING_COINS,
     TELEPORTER,
@@ -306,15 +307,21 @@ def generate_floor(rng: random.Random, floor_number: int) -> Floor:
         for cell in take(_coin_count(floor_number)):
             _place(grid, cell, COIN)
 
-        # Every floor has one randomly placed merchant chest
-        shop_cell = take(1)[0]
-        _place(grid, shop_cell, SHOP)
+        # Two identical chests: one merchant, one mimic (order shuffled)
+        chest_cells = take(2)
+        if not chest_cells:
+            continue
+        rng.shuffle(chest_cells)
+        _place(grid, chest_cells[0], SHOP)
+        if len(chest_cells) >= 2:
+            _place(grid, chest_cells[1], MIMIC)
 
         # Linked portal pair on floors 4/8/12/16 — one near the chest, one far
         if floor_number % 4 == 0 and len(empties) >= 2:
             def manhattan(a: Coord, b: Coord) -> int:
                 return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
+            shop_cell = chest_cells[0]
             near = [c for c in empties if manhattan(c, shop_cell) <= 2]
             if not near:
                 near = sorted(empties, key=lambda c: manhattan(c, shop_cell))[:4]
@@ -343,6 +350,7 @@ def generate_floor(rng: random.Random, floor_number: int) -> Floor:
     _place(grid, entrance, ENTRANCE)
     _place(grid, exit_c, EXIT)
     _place(grid, (cols // 2, 0), SHOP)
+    _place(grid, (cols // 2, rows - 1), MIMIC)
     if floor_number % 4 == 0:
         # One portal next to the chest, one across the map
         _place(grid, (cols // 2 + 1, 0), TELEPORTER)

@@ -20,8 +20,10 @@ ENTRANCE = "@"
 EXIT = ">"
 COIN = "o"
 SHOP = "S"
+MIMIC = "M"
 TELEPORTER = "T"
 # Monsters stored as "1".."9" (damage)
+MIMIC_DAMAGE = 2  # Fake chest bite (shield / bomb apply)
 
 
 @dataclass(frozen=True)
@@ -81,7 +83,7 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "WHEN YOU STOP",
         (
-            "Chest → tap it (or Shop) to buy once",
+            "Chest → merchant shop, or mimic (−2 HP)",
             "Stairs → tap them (or Gate) to descend",
         ),
     ),

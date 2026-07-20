@@ -148,8 +148,11 @@ export function PlayScreen({
     !run.pendingDeath;
 
   const [px, py] = run.pos;
-  const onStairs = !run.pendingStairs && run.grid[py]![px] === EXIT;
-  const onChest = !run.shopOpen && run.grid[py]![px] === SHOP;
+  const onStairs =
+    !run.pendingStairs && run.movesLeft <= 0 && run.grid[py]![px] === EXIT;
+  // Reopen merchant only after the turn ended on the chest (final step)
+  const onChest =
+    !run.shopOpen && run.movesLeft <= 0 && run.grid[py]![px] === SHOP;
   const floorFrom = run.floorIndex + 1;
   const isLast = run.floorIndex + 1 >= run.book.floors.length;
   const floorTo = floorFrom + 1;
