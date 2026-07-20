@@ -302,7 +302,12 @@ export function PlayScreen({
             <button
               type="button"
               className={`item-btn ${run.inventory["iron-shield"] ? "on" : ""}`}
+              aria-disabled={!run.inventory["iron-shield"]}
               onClick={() => showInspect(itemHint("iron-shield", run))}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                showInspect(itemHint("iron-shield", run));
+              }}
             >
               <img src={iconUrl("shield")} alt="Shield" />
             </button>
