@@ -384,13 +384,6 @@ export function PlayScreen({
 
       <footer className="play-foot">
         <p>© {new Date().getFullYear()} Kappz LLC · All rights reserved.</p>
-        <p className="play-foot-credits">
-          Icons by Lorc &amp; Delapouite —{" "}
-          <a href="https://game-icons.net" target="_blank" rel="noreferrer">
-            game-icons.net
-          </a>{" "}
-          (CC BY 3.0)
-        </p>
       </footer>
 
       {needsHp && <HpSetupOverlay onRolled={onStartingHp} />}
