@@ -91,15 +91,15 @@ def _place(grid: list[list[str]], coord: Coord, value: str) -> None:
 
 def _monster_damage(rng: random.Random, floor_number: int) -> str:
     if floor_number <= 3:
-        return str(rng.randint(1, 2))
-    if floor_number <= 8:
         return str(rng.randint(1, 3))
-    return str(rng.randint(2, 4))
+    if floor_number <= 8:
+        return str(rng.randint(2, 4))
+    return str(rng.randint(3, 4))
 
 
 def _wall_count(floor_number: int, total_cells: int) -> int:
-    # Dense corridors: ~20% early → ~32% late — multiples of 3 (L pieces)
-    base = 0.2 + min(floor_number, 16) * 0.0075
+    # Dense corridors: ~24% early → ~38% late — multiples of 3 (L pieces)
+    base = 0.24 + min(floor_number, 16) * 0.009
     raw = int(total_cells * base)
     return max(3, (raw // 3) * 3)
 
@@ -207,12 +207,12 @@ def _seal_diagonal_wall_touches(
 
 
 def _monster_count(floor_number: int) -> int:
-    # Floor 1 ≈ 5, floor 16 ≈ 12
-    return 4 + floor_number // 2
+    # Floor 1 ≈ 6, floor 16 ≈ 14
+    return 5 + floor_number // 2
 
 
 def _coin_count(floor_number: int) -> int:
-    return 2 + floor_number // 5
+    return 1 + floor_number // 6
 
 
 def _shortest_path(grid: list[list[str]], start: Coord, goal: Coord) -> list[Coord] | None:

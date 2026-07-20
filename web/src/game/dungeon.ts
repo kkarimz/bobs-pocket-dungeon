@@ -125,14 +125,14 @@ function place(grid: string[][], coord: Coord, value: string): void {
 }
 
 function monsterDamage(rng: PythonRandom, floorNumber: number): string {
-  if (floorNumber <= 3) return String(rng.randint(1, 2));
-  if (floorNumber <= 8) return String(rng.randint(1, 3));
-  return String(rng.randint(2, 4));
+  if (floorNumber <= 3) return String(rng.randint(1, 3));
+  if (floorNumber <= 8) return String(rng.randint(2, 4));
+  return String(rng.randint(3, 4));
 }
 
 function wallCount(floorNumber: number, totalCells: number): number {
-  // Dense corridors: ~20% early → ~32% late — round to multiples of 3 (L pieces)
-  const base = 0.2 + Math.min(floorNumber, 16) * 0.0075;
+  // Dense corridors: ~24% early → ~38% late — round to multiples of 3 (L pieces)
+  const base = 0.24 + Math.min(floorNumber, 16) * 0.009;
   const raw = Math.trunc(totalCells * base);
   return Math.max(3, Math.floor(raw / 3) * 3);
 }
@@ -276,12 +276,12 @@ function sealDiagonalWallTouches(
 }
 
 function monsterCount(floorNumber: number): number {
-  // Floor 1 ≈ 5, floor 16 ≈ 12
-  return 4 + Math.floor(floorNumber / 2);
+  // Floor 1 ≈ 6, floor 16 ≈ 14
+  return 5 + Math.floor(floorNumber / 2);
 }
 
 function coinCount(floorNumber: number): number {
-  return 2 + Math.floor(floorNumber / 5);
+  return 1 + Math.floor(floorNumber / 6);
 }
 
 function manhattan(a: Coord, b: Coord): number {
