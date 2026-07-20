@@ -429,11 +429,12 @@ function resolveCell(
       next.floaters = pushFloater(next, "SHOP", "info");
     }
   } else if (cell === MIMIC) {
-    // Looks like a chest — bites only when you stop to open it
-    if (interact && next.movesLeft === 0) {
+    // Tap the mimic as your destination to "open" it — it bites (turn ends)
+    if (interact) {
       const raw = MIMIC_DAMAGE;
       const dmg = applyDamage(next, raw);
       next.hp = Math.max(0, next.hp - dmg);
+      next.movesLeft = 0;
       grid[y]![x] = EMPTY;
       if (next.bombArmed) {
         next.inventory = { ...next.inventory, usedBomb: true };
@@ -442,17 +443,18 @@ function resolveCell(
           dmg === 0 ? "Bomb ignored the mimic!" : `Mimic! −${dmg} HP.`;
         next.floaters = pushFloater(
           next,
-          dmg === 0 ? "BLOCKED" : `−${dmg}`,
+          dmg === 0 ? "BLOCKED" : `−${dmg} HP`,
           dmg === 0 ? "info" : "dmg",
         );
+        if (dmg > 0) next.shake = true;
       } else {
         next.message = dmg > 0 ? `Mimic! −${dmg} HP.` : "Mimic shrugged.";
-        if (dmg > 0) {
-          next.floaters = pushFloater(next, `−${dmg} HP`, "dmg");
-          next.shake = true;
-        } else {
-          next.floaters = pushFloater(next, "MIMIC", "info");
-        }
+        next.floaters = pushFloater(
+          next,
+          dmg > 0 ? `−${dmg} HP` : "MIMIC",
+          dmg > 0 ? "dmg" : "info",
+        );
+        if (dmg > 0) next.shake = true;
       }
     }
   } else if (cell === TELEPORTER) {

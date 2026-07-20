@@ -125,7 +125,7 @@ export function hintForCell(
   if (cell === WALL) return "Wall — blocked.";
   if (cell === COIN) return "Coin — +1 GOLD.";
   if (cell === SHOP) return "Merchant chest — end your move here to shop.";
-  if (cell === MIMIC) return "Mimic! End your move here and it bites (−2 HP).";
+  if (cell === MIMIC) return "Mimic — tap it to open; it bites (−2 HP).";
   if (cell === TELEPORTER) return "Portal — enter to warp; turn ends.";
   if (cell === EXIT) return "Stairs — tap here to descend.";
   if (/^[1-9]$/.test(cell)) {

@@ -35,8 +35,8 @@ export function TitleScreen({ hasContinue, onNew, onContinue }: Props) {
             end the turn.
           </li>
           <li>
-            Two chests each floor: a merchant, and a mimic (−2 HP when you stop
-            on it). Tap stairs to go deeper.
+            Two chests each floor: a merchant, and a mimic (−2 HP when you open
+            it). Tap stairs to go deeper.
           </li>
           <li>At 0 HP you die, reset HP/GOLD, skip to the next floor, and continue.</li>
         </ul>
