@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { RulesMode } from "../game/engine";
 import { iconUrl } from "../game/icons";
 import { MONSTER_DAMAGE } from "../game/rules";
+import { MoreFromKappz } from "./MoreFromKappz";
 
 interface Props {
   hasContinue: boolean;
@@ -83,6 +84,11 @@ export function TitleScreen({ hasContinue, onNew, onContinue }: Props) {
           ))}
         </ul>
       </section>
+
+      <MoreFromKappz />
+      <p className="title-copy">
+        © {new Date().getFullYear()} Kappz LLC · All rights reserved.
+      </p>
     </div>
   );
 }

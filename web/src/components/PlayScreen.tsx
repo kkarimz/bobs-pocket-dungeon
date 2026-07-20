@@ -11,6 +11,7 @@ import { DescendGate } from "./DescendGate";
 import { DeathOverlay } from "./DeathOverlay";
 import { HpSetupOverlay } from "./HpSetupOverlay";
 import { MimicOverlay } from "./MimicOverlay";
+import { MoreFromKappz } from "./MoreFromKappz";
 
 /** Short banner text — never show stacked legacy roll/mode prompts. */
 function statusLine(run: RunState): string {
@@ -389,6 +390,7 @@ export function PlayScreen({
       </div>
 
       <footer className="play-foot">
+        <MoreFromKappz compact />
         <p>© {new Date().getFullYear()} Kappz LLC · All rights reserved.</p>
       </footer>
 

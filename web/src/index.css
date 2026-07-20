@@ -1647,3 +1647,64 @@ h1 {
 .cell-debug-mimic {
   box-shadow: inset 0 0 0 2px #c45c4a !important;
 }
+
+/* —— More from Kappz plug —— */
+.more-kappz {
+  margin: 1.1rem 0 0.35rem;
+  text-align: center;
+}
+
+.more-kappz-eyebrow {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.more-kappz-line {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.more-kappz-line a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(184, 137, 90, 0.55);
+  text-underline-offset: 0.15em;
+}
+
+.more-kappz-line a:hover {
+  color: var(--accent);
+}
+
+.more-kappz-blurb {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.more-kappz.is-compact {
+  margin: 0 0 0.35rem;
+}
+
+.more-kappz.is-compact .more-kappz-line {
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+}
+
+.more-kappz.is-compact .more-kappz-line a {
+  color: var(--muted);
+}
+
+.title-copy {
+  margin: 0.75rem 0 0.25rem;
+  text-align: center;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.75;
+}

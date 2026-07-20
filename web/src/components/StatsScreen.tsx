@@ -1,4 +1,5 @@
 import type { RunState } from "../game/engine";
+import { MoreFromKappz } from "./MoreFromKappz";
 
 interface Props {
   run: RunState;
@@ -38,6 +39,7 @@ export function StatsScreen({ run, onNew, onTitle }: Props) {
       <button type="button" className="btn" onClick={onTitle}>
         Title
       </button>
+      <MoreFromKappz />
     </div>
   );
 }
