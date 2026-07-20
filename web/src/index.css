@@ -937,13 +937,10 @@ h1 {
   opacity: 0.75;
 }
 
-.play-foot-credits {
-  margin-top: 0.25rem !important;
-  opacity: 0.55 !important;
-}
-
-.play-foot a {
-  color: var(--accent);
+.play-foot {
+  margin-top: auto;
+  padding: 0.85rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+  text-align: center;
 }
 
 .play-screen .stat-rail .hud-stat strong {
