@@ -644,13 +644,29 @@ h1 {
 
 .stat-rail .hud-stat,
 .stat-rail .hud-menu {
-  width: var(--rail-size);
-  height: var(--rail-size);
-  min-width: var(--rail-size);
-  min-height: var(--rail-size);
-  padding: 0.1rem;
+  width: var(--rail-size) !important;
+  height: var(--rail-size) !important;
+  min-width: var(--rail-size) !important;
+  min-height: var(--rail-size) !important;
+  max-width: var(--rail-size);
+  max-height: var(--rail-size);
+  flex: 0 0 var(--rail-size);
+  padding: 0.08rem;
   border-radius: 2px;
-  border-width: 1.5px;
+  border: 1.5px solid var(--line);
+  background: var(--cell);
+  color: var(--ink-deep);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.stat-rail .hud-stat span,
+.stat-rail .hud-menu span {
+  color: #6a5a48;
+}
+
+.stat-rail .hud-stat strong {
+  color: var(--ink-deep);
 }
 
 .rail-die {
@@ -913,12 +929,18 @@ h1 {
 }
 
 .play-screen .stat-rail .hud-stat strong {
-  font-size: 0.85rem;
+  font-size: clamp(0.65rem, calc(var(--rail-size) * 0.32), 0.95rem);
+  line-height: 1.05;
 }
 
 .play-screen .stat-rail .hud-stat span,
 .play-screen .stat-rail .hud-menu span {
-  font-size: 0.55rem;
+  font-size: clamp(0.42rem, calc(var(--rail-size) * 0.2), 0.58rem);
+  letter-spacing: 0.04em;
+}
+
+.play-screen .stat-rail .hud-menu {
+  color: var(--ink-deep);
 }
 
 .item-btn:disabled {
