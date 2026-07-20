@@ -1,5 +1,6 @@
 import type { Book, Coord } from "./dungeon";
 import {
+  canEnterDiagonally,
   cloneGrid,
   findPortals,
   generateBook,
@@ -59,6 +60,8 @@ export interface RunState {
   shopOpen: boolean;
   message: string;
   pendingStairs: boolean;
+  /** True after HP hits 0 — wait for player to acknowledge before advancing. */
+  pendingDeath: boolean;
   bombArmed: boolean;
   keyArmed: boolean;
   won: boolean;
@@ -108,6 +111,7 @@ export function createNewRun(seed: number, floors = DEFAULT_FLOORS): RunState {
     shopOpen: false,
     message: "Roll starting HP.",
     pendingStairs: false,
+    pendingDeath: false,
     bombArmed: false,
     keyArmed: false,
     won: false,
@@ -134,6 +138,7 @@ export function applyStartingHp(state: RunState, roll: number): RunState {
 
 export function startTurnRoll(state: RunState, dieValue?: number): RunState {
   if (state.startingHp <= 0) return state;
+  if (state.pendingDeath) return state;
   if (state.movesLeft > 0) return state;
   const die = dieValue ?? rollD6();
   return {
@@ -182,6 +187,7 @@ export function isStuck(state: RunState): boolean {
     state.movesLeft > 0 &&
     !state.shopOpen &&
     !state.pendingStairs &&
+    !state.pendingDeath &&
     legalMoves(state).length === 0
   );
 }
@@ -189,10 +195,20 @@ export function isStuck(state: RunState): boolean {
 /** Clear leftover moves when boxed in so the player can roll again. */
 export function endTurnIfStuck(state: RunState): RunState {
   if (!isStuck(state)) return state;
+  const mode = state.diagonal ? "diagonal" : "straight";
   return {
     ...state,
     movesLeft: 0,
-    message: "Roll again.",
+    message: `No ${mode} steps. Roll again.`,
+    floaters: [
+      ...state.floaters.filter((f) => Date.now() - f.id < 1200),
+      {
+        id: Date.now() + Math.random(),
+        text: state.diagonal ? "DIAGONAL" : "STRAIGHT",
+        kind: "info" as const,
+      },
+    ].slice(-6),
+    shake: true,
   };
 }
 
@@ -210,6 +226,7 @@ function stepNeighbors(
   const seen = new Set<string>();
   const out: Coord[] = [];
   for (const n of neighbors(pos, cols, rows, mode)) {
+    if (mode === "diag" && !canEnterDiagonally(pos, n, grid)) continue;
     const k = keyOf(n);
     if (seen.has(k)) continue;
     seen.add(k);
@@ -217,6 +234,7 @@ function stepNeighbors(
   }
   const other = mode === "diag" ? "ortho" : "diag";
   for (const n of neighbors(pos, cols, rows, other)) {
+    if (other === "diag" && !canEnterDiagonally(pos, n, grid)) continue;
     const cell = grid[n[1]]![n[0]]!;
     if (cell !== EXIT && cell !== SHOP && cell !== TELEPORTER) continue;
     const k = keyOf(n);
@@ -229,7 +247,13 @@ function stepNeighbors(
 
 /** One-step neighbors only (used while auto-walking a path). */
 export function adjacentMoves(state: RunState): Coord[] {
-  if (state.movesLeft <= 0 || state.shopOpen || state.pendingStairs) return [];
+  if (
+    state.movesLeft <= 0 ||
+    state.shopOpen ||
+    state.pendingStairs ||
+    state.pendingDeath
+  )
+    return [];
   const cols = state.grid[0]!.length;
   const rows = state.grid.length;
   const visited = new Set(state.visitedThisTurn);
@@ -258,7 +282,13 @@ export function adjacentMoves(state: RunState): Coord[] {
 /** All cells reachable this turn within remaining moves (shortest path per cell). */
 export function reachableMap(state: RunState): Map<string, Coord[]> {
   const result = new Map<string, Coord[]>();
-  if (state.movesLeft <= 0 || state.shopOpen || state.pendingStairs) return result;
+  if (
+    state.movesLeft <= 0 ||
+    state.shopOpen ||
+    state.pendingStairs ||
+    state.pendingDeath
+  )
+    return result;
 
   const cols = state.grid[0]!.length;
   const rows = state.grid.length;
@@ -414,27 +444,41 @@ function resolveCell(state: RunState, pos: Coord): RunState {
 
 function handleDeath(state: RunState): RunState {
   const deaths = state.deaths + 1;
+  return {
+    ...state,
+    deaths,
+    hp: 0,
+    movesLeft: 0,
+    shopOpen: false,
+    pendingStairs: false,
+    pendingDeath: true,
+    bombArmed: false,
+    keyArmed: false,
+    floaters: [{ id: Date.now(), text: "DEAD", kind: "dmg" }],
+    shake: true,
+    message: `Death #${deaths}.`,
+  };
+}
+
+/** After the death screen — next floor (reset HP/gold) or run-over stats. */
+export function acknowledgeDeath(state: RunState): RunState {
+  if (!state.pendingDeath) return state;
   const nextFloor = state.floorIndex + 1;
   if (nextFloor >= state.book.floors.length) {
     return {
       ...state,
-      deaths,
-      hp: 0,
       gold: 0,
       screen: "stats",
       won: false,
+      pendingDeath: false,
       message: "You fell on the final stretch.",
-      movesLeft: 0,
-      shopOpen: false,
-      pendingStairs: false,
       floaters: [],
-      shake: true,
+      shake: false,
     };
   }
   const floor = state.book.floors[nextFloor]!;
   return {
     ...state,
-    deaths,
     floorIndex: nextFloor,
     grid: cloneGrid(floor.grid),
     pos: [...floor.entrance] as Coord,
@@ -445,11 +489,12 @@ function handleDeath(state: RunState): RunState {
     visitedThisTurn: [],
     shopOpen: false,
     pendingStairs: false,
+    pendingDeath: false,
     bombArmed: false,
     keyArmed: false,
-    floaters: [{ id: Date.now(), text: "DEAD", kind: "dmg" }],
-    shake: true,
-    message: `Death #${deaths}. Reset to ${state.startingHp} HP. Floor ${nextFloor + 1}.`,
+    floaters: [],
+    shake: false,
+    message: "Roll to move.",
   };
 }
 
@@ -461,15 +506,16 @@ export function stepTo(state: RunState, dest: Coord): RunState {
     ...state,
     movesLeft: state.movesLeft - 1,
     visitedThisTurn: [...state.visitedThisTurn, keyOf(dest)],
-    floaters: [],
+    // Keep recent floaters so mid-path hits (monster/gold) stay visible
+    // while Bob keeps walking; resolveCell prunes stale ones.
     shake: false,
   };
   next = resolveCell(next, dest);
   if (next.screen !== "play") return next;
   if (next.movesLeft === 0 && !next.pendingStairs && !next.shopOpen) {
-    // Keep short event text (monster/gold); otherwise prompt next roll
+    // Keep short event text; otherwise prompt next roll
     const keepEvent =
-      /^(Monster|Hit|\+1 GOLD|Bomb|Key|No damage|BLOCKED)/i.test(
+      /^(Monster|Hit|\+1 GOLD|Bomb|Key|No damage|BLOCKED|Portal)/i.test(
         next.message,
       ) || next.message.includes("−");
     next = {
@@ -602,6 +648,9 @@ export function loadRun(): RunState | null {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const state = JSON.parse(raw) as RunState;
+    if (typeof state.pendingDeath !== "boolean") {
+      state.pendingDeath = false;
+    }
     // Scrub legacy stacked status lines from older builds
     if (
       /Rolled \d+|tap a cell to dash|·\s*Roll again|No moves from here/i.test(

@@ -78,6 +78,18 @@ export const MONSTER_ICONS: Record<string, string> = {
   "4": "dragon",
 };
 
+/** Damage dealt when you enter that monster’s cell (Iron Shield −1, min 1). */
+export const MONSTER_DAMAGE: readonly {
+  icon: string;
+  name: string;
+  damage: number;
+}[] = [
+  { icon: "slime", name: "Slime", damage: 1 },
+  { icon: "imp", name: "Imp", damage: 2 },
+  { icon: "orc", name: "Orc", damage: 3 },
+  { icon: "dragon", name: "Dragon", damage: 4 },
+];
+
 export const CELL_ICONS: Record<string, string> = {
   "@": "bob",
   ">": "exit",

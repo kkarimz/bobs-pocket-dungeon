@@ -8,11 +8,13 @@ import { DungeonGrid } from "./DungeonGrid";
 import { MerchantModal } from "./MerchantModal";
 import { DiceRoller } from "./DiceRoller";
 import { DescendGate } from "./DescendGate";
+import { DeathOverlay } from "./DeathOverlay";
 import { HpSetupOverlay } from "./HpSetupOverlay";
 
 /** Short banner text — never show stacked legacy roll/mode prompts. */
 function statusLine(run: RunState): string {
   if (run.startingHp <= 0) return "Roll starting HP.";
+  if (run.pendingDeath) return run.message.trim() || "You died.";
   if (run.pendingStairs) return "The gate awaits.";
   if (run.shopOpen) return "Merchant.";
 
@@ -22,7 +24,7 @@ function statusLine(run: RunState): string {
       raw,
     );
   const event =
-    /^(Monster|Hit|\+1 GOLD|Bomb|Key|No damage|Potion|Bought|Not enough|Portal|Death|BLOCKED)/i.test(
+    /^(Monster|Hit|\+1 GOLD|Bomb|Key|No damage|Potion|Bought|Not enough|Portal|Death|BLOCKED|No )/i.test(
       raw,
     ) ||
     raw.includes("−") ||
@@ -31,7 +33,9 @@ function statusLine(run: RunState): string {
 
   if (run.movesLeft > 0) {
     if (!legacy && event) return raw;
-    return "Tap a cell to move.";
+    return run.diagonal
+      ? "Tap a cell (diagonal)."
+      : "Tap a cell (straight).";
   }
 
   if (!legacy && event) return raw;
@@ -56,6 +60,7 @@ interface Props {
   onBomb: () => void;
   onKey: () => void;
   onQuit: () => void;
+  onAcknowledgeDeath: () => void;
 }
 
 export function PlayScreen({
@@ -75,6 +80,7 @@ export function PlayScreen({
   onBomb,
   onKey,
   onQuit,
+  onAcknowledgeDeath,
 }: Props) {
   const [rolling, setRolling] = useState(false);
   const [rerolling, setRerolling] = useState(false);
@@ -82,6 +88,7 @@ export function PlayScreen({
   const needsHp = run.startingHp <= 0;
   const canRoll =
     !needsHp &&
+    !run.pendingDeath &&
     run.movesLeft <= 0 &&
     !run.pendingStairs &&
     !run.shopOpen &&
@@ -93,17 +100,19 @@ export function PlayScreen({
     run.die !== null &&
     run.movesLeft > 0 &&
     !rerolling &&
-    !walking;
+    !walking &&
+    !run.pendingDeath;
 
   const [px, py] = run.pos;
   const onStairs = !run.pendingStairs && run.grid[py]![px] === EXIT;
   const floorFrom = run.floorIndex + 1;
   const isLast = run.floorIndex + 1 >= run.book.floors.length;
   const floorTo = floorFrom + 1;
+  const deathIsFinal = run.floorIndex + 1 >= run.book.floors.length;
 
   return (
     <div
-      className={`screen play-screen ${run.pendingStairs ? "gate-open" : ""} ${needsHp ? "hp-setup-open" : ""}`}
+      className={`screen play-screen ${run.pendingStairs ? "gate-open" : ""} ${needsHp ? "hp-setup-open" : ""} ${run.pendingDeath ? "death-open" : ""}`}
     >
       <div className="play-frame">
         <aside className="stat-rail" aria-label="Run stats">
@@ -176,12 +185,12 @@ export function PlayScreen({
               }}
             />
             <div className="dice-meta">
-              {run.movesLeft > 0 && (
+              {run.die !== null && (
                 <div
-                  className="rail-mode"
+                  className={`rail-mode ${run.movesLeft <= 0 ? "is-spent" : ""}`}
                   title={run.diagonal ? "Diagonal moves" : "Straight moves"}
                 >
-                  <strong>{run.movesLeft}</strong>
+                  <strong>{run.movesLeft > 0 ? run.movesLeft : "—"}</strong>
                   <span
                     className={`dir-pad ${run.diagonal ? "diag" : "orth"}`}
                     aria-label={run.diagonal ? "diagonal" : "orthogonal"}
@@ -287,6 +296,17 @@ export function PlayScreen({
       </footer>
 
       {needsHp && <HpSetupOverlay onRolled={onStartingHp} />}
+
+      {run.pendingDeath && (
+        <DeathOverlay
+          deaths={run.deaths}
+          floorFrom={floorFrom}
+          floorTo={floorTo}
+          startingHp={run.startingHp}
+          isFinal={deathIsFinal}
+          onContinue={onAcknowledgeDeath}
+        />
+      )}
 
       {run.pendingStairs && (
         <DescendGate

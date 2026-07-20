@@ -1,9 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// Use "/" for Cloudflare Pages / custom domain.
-// For GitHub project Pages only, set base to "/bobs-pocket-dungeon/".
+// GitHub project Pages: https://kkarimz.github.io/bobs-pocket-dungeon/
+// Switch base to "/" later for Cloudflare / custom domain at root.
 export default defineConfig({
   plugins: [react()],
-  base: "/",
+  base: "/bobs-pocket-dungeon/",
 });

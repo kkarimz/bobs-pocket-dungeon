@@ -5,13 +5,16 @@ browser with dice, path tapping, and full run tracking.
 
 ## Play in the browser
 
+**Live test build (GitHub Pages):**
+https://kkarimz.github.io/bobs-pocket-dungeon/
+
 ```bash
 cd web
 npm install
 npm run dev
 ```
 
-Open the local URL Vite prints (usually http://localhost:5173).
+Open the local URL Vite prints (usually http://localhost:5173/bobs-pocket-dungeon/).
 
 ### Build for your own domain
 
@@ -51,6 +54,8 @@ Layout seeds match between the PDF and the web app (same dungeon generator).
 - Monsters: slime (−1), imp (−2), orc (−3), dragon (−4)
 - Merchant: potion, shield, lucky feather, bomb, and key
 - Stairs, chests, gold, and portals
+- Odd rolls = diagonal only; no cutting wall corners (D&D style)
+- Walls are placed in L-shaped blocks for clearer corridors
 
 ## Printing on 4×6 photo paper
 

@@ -3,6 +3,7 @@ import {
   applyStartingHp,
   armBomb,
   armKey,
+  acknowledgeDeath,
   buyItem,
   clearPendingStairs,
   clearSave,
@@ -46,14 +47,22 @@ export function App() {
     if (run.screen === "play" || run.screen === "stats") saveRun(run);
   }, [run]);
 
-  // Softlock guard: leftover move points with nowhere to step
+  // Softlock guard: leftover move points with nowhere to step.
+  // Slight delay so the roll face + direction pad paint before we clear moves.
   useEffect(() => {
-    if (!run || walking || run.screen !== "play") return;
+    if (!run || walking || run.screen !== "play" || run.pendingDeath) return;
+    if (!run.movesLeft) return;
     const fixed = endTurnIfStuck(run);
-    if (fixed !== run) {
-      setRun(fixed);
-      runRef.current = fixed;
-    }
+    if (fixed === run) return;
+    const t = window.setTimeout(() => {
+      setRun((prev) => {
+        if (!prev || prev !== run) return prev;
+        const next = endTurnIfStuck(prev);
+        runRef.current = next;
+        return next;
+      });
+    }, 450);
+    return () => window.clearTimeout(t);
   }, [run, walking]);
 
   const startNew = () => {
@@ -89,19 +98,27 @@ export function App() {
       state = stepTo(state, step);
       setRun(state);
       runRef.current = state;
-      if (
+
+      // Pause on hits so −HP / +GOLD floaters can play (empty steps stay snappy).
+      const eventful =
+        state.shake ||
+        state.floaters.some((f) => Date.now() - f.id < 80);
+      const stop =
         state.screen !== "play" ||
         state.shopOpen ||
         state.pendingStairs ||
+        state.pendingDeath ||
         state.hp <= 0 ||
         state.movesLeft <= 0 ||
         (state.pos[0] === prev.pos[0] &&
           state.pos[1] === prev.pos[1] &&
-          state.movesLeft === prev.movesLeft)
-      ) {
+          state.movesLeft === prev.movesLeft);
+      if (stop) {
+        // Let the death / hit feedback sit a beat before the overlay owns the screen
+        if (state.pendingDeath || eventful) await sleep(420);
         break;
       }
-      await sleep(100);
+      await sleep(eventful ? 520 : 90);
     }
     state = endTurnIfStuck(state);
     setRun(state);
@@ -134,7 +151,8 @@ export function App() {
   }
 
   const needsHp = run.startingHp <= 0;
-  const moves = walking || needsHp ? [] : legalMoves(run);
+  const moves =
+    walking || needsHp || run.pendingDeath ? [] : legalMoves(run);
 
   return (
     <PlayScreen
@@ -153,6 +171,7 @@ export function App() {
       onPotion={() => setRun(usePotion(run))}
       onBomb={() => setRun(armBomb(run))}
       onKey={() => setRun(armKey(run))}
+      onAcknowledgeDeath={() => setRun(acknowledgeDeath(run))}
       onQuit={() => {
         saveRun(run);
         setRun(null);

@@ -62,9 +62,10 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "EACH TURN",
         (
-            "Roll d6: EVEN = straight; ODD = diagonal.",
+            "Roll d6: EVEN = straight; ODD = diagonal only.",
             "Move up to the roll; draw your path.",
-            "Do not cross walls or the grid edge.",
+            "No cutting wall corners (D&D style).",
+            "No legal step? Roll again.",
         ),
     ),
     (
@@ -82,7 +83,8 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
         (
             "Carry End HP / GOLD to next Start.",
             "At 0 HP: mark a death.",
-            "Reset to starting HP and 0 GOLD; continue.",
+            "Reset to starting HP and 0 GOLD;",
+            "skip to the next floor and continue.",
         ),
     ),
     (

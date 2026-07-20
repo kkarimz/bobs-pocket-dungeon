@@ -58,6 +58,33 @@ export function neighbors(
   return out;
 }
 
+/**
+ * D&D grid rule: diagonal steps can't cut the corner of a wall.
+ * Blocked when either orthogonal flank between from→to is a wall.
+ */
+export function canEnterDiagonally(
+  from: Coord,
+  to: Coord,
+  grid: string[][],
+): boolean {
+  const [x, y] = from;
+  const [tx, ty] = to;
+  const dx = tx - x;
+  const dy = ty - y;
+  if (Math.abs(dx) !== 1 || Math.abs(dy) !== 1) return true;
+  const cols = grid[0]!.length;
+  const rows = grid.length;
+  const ax = x + dx;
+  const ay = y;
+  const bx = x;
+  const by = y + dy;
+  if (ax < 0 || ax >= cols || ay < 0 || ay >= rows) return false;
+  if (bx < 0 || bx >= cols || by < 0 || by >= rows) return false;
+  if (grid[ay]![ax]! === WALL) return false;
+  if (grid[by]![bx]! === WALL) return false;
+  return true;
+}
+
 function isPassable(cell: string): boolean {
   return cell !== WALL;
 }
@@ -102,9 +129,148 @@ function monsterDamage(rng: PythonRandom, floorNumber: number): string {
 }
 
 function wallCount(floorNumber: number, totalCells: number): number {
-  // Dense corridors: ~20% early → ~32% late
+  // Dense corridors: ~20% early → ~32% late — round to multiples of 3 (L pieces)
   const base = 0.2 + Math.min(floorNumber, 16) * 0.0075;
-  return Math.trunc(totalCells * base);
+  const raw = Math.trunc(totalCells * base);
+  return Math.max(3, Math.floor(raw / 3) * 3);
+}
+
+/** L-tromino offsets (corner + right/left + down/up). */
+const WALL_L_SHAPES: Coord[][] = [
+  [
+    [0, 0],
+    [1, 0],
+    [0, 1],
+  ],
+  [
+    [0, 0],
+    [-1, 0],
+    [0, 1],
+  ],
+  [
+    [0, 0],
+    [1, 0],
+    [0, -1],
+  ],
+  [
+    [0, 0],
+    [-1, 0],
+    [0, -1],
+  ],
+];
+
+function inBounds(x: number, y: number, cols: number, rows: number): boolean {
+  return x >= 0 && x < cols && y >= 0 && y < rows;
+}
+
+/** Place walls as L-shaped triplets so corners never touch only diagonally. */
+function placeWallLs(
+  rng: PythonRandom,
+  grid: string[][],
+  need: number,
+  forbidden: Set<string>,
+): void {
+  const cols = grid[0]!.length;
+  const rows = grid.length;
+  let placed = 0;
+  let guard = 0;
+  while (placed + 3 <= need && guard < need * 40) {
+    guard++;
+    const ox = rng.randint(0, cols - 1);
+    const oy = rng.randint(0, rows - 1);
+    const shape = WALL_L_SHAPES[rng.randint(0, WALL_L_SHAPES.length - 1)]!;
+    const cells: Coord[] = [];
+    let ok = true;
+    for (const [dx, dy] of shape) {
+      const x = ox + dx;
+      const y = oy + dy;
+      if (!inBounds(x, y, cols, rows)) {
+        ok = false;
+        break;
+      }
+      if (forbidden.has(`${x},${y}`)) {
+        ok = false;
+        break;
+      }
+      if (grid[y]![x]! !== EMPTY && grid[y]![x]! !== WALL) {
+        ok = false;
+        break;
+      }
+      cells.push([x, y]);
+    }
+    if (!ok) continue;
+    for (const [x, y] of cells) {
+      if (grid[y]![x]! !== WALL) {
+        place(grid, [x, y], WALL);
+        placed++;
+      }
+    }
+  }
+}
+
+/**
+ * If two walls touch only at a corner, fill one ortho connector so they form an L/block.
+ */
+function sealDiagonalWallTouches(
+  rng: PythonRandom,
+  grid: string[][],
+  forbidden: Set<string>,
+): void {
+  const cols = grid[0]!.length;
+  const rows = grid.length;
+  const diagDirs: Coord[] = [
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+    [-1, -1],
+  ];
+  for (let pass = 0; pass < 8; pass++) {
+    let added = 0;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        if (grid[y]![x]! !== WALL) continue;
+        for (const [dx, dy] of diagDirs) {
+          const x2 = x + dx;
+          const y2 = y + dy;
+          if (!inBounds(x2, y2, cols, rows)) continue;
+          if (grid[y2]![x2]! !== WALL) continue;
+          const a: Coord = [x + dx, y];
+          const b: Coord = [x, y + dy];
+          const aWall =
+            inBounds(a[0], a[1], cols, rows) && grid[a[1]]![a[0]]! === WALL;
+          const bWall =
+            inBounds(b[0], b[1], cols, rows) && grid[b[1]]![b[0]]! === WALL;
+          if (aWall || bWall) continue;
+          const options: Coord[] = [];
+          for (const c of [a, b]) {
+            if (
+              inBounds(c[0], c[1], cols, rows) &&
+              !forbidden.has(`${c[0]},${c[1]}`) &&
+              grid[c[1]]![c[0]]! === EMPTY
+            ) {
+              options.push(c);
+            }
+          }
+          if (!options.length) {
+            const k2 = `${x2},${y2}`;
+            const k1 = `${x},${y}`;
+            if (!forbidden.has(k2)) {
+              grid[y2]![x2] = EMPTY;
+              added++;
+            } else if (!forbidden.has(k1)) {
+              grid[y]![x] = EMPTY;
+              added++;
+            }
+            continue;
+          }
+          const fill = options[rng.randint(0, options.length - 1)]!;
+          place(grid, fill, WALL);
+          added++;
+        }
+      }
+    }
+    if (added === 0) break;
+  }
 }
 
 function monsterCount(floorNumber: number): number {
@@ -172,21 +338,12 @@ export function generateFloor(rng: PythonRandom, floorNumber: number): Floor {
     place(grid, entrance, ENTRANCE);
     place(grid, exitC, EXIT);
 
-    const candidates: Coord[] = [];
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        if (
-          !(x === entrance[0] && y === entrance[1]) &&
-          !(x === exitC[0] && y === exitC[1])
-        ) {
-          candidates.push([x, y]);
-        }
-      }
-    }
-    rng.shuffle(candidates);
-    for (const cell of candidates.slice(0, wallCount(floorNumber, total))) {
-      place(grid, cell, WALL);
-    }
+    const forbidden = new Set([
+      `${entrance[0]},${entrance[1]}`,
+      `${exitC[0]},${exitC[1]}`,
+    ]);
+    placeWallLs(rng, grid, wallCount(floorNumber, total), forbidden);
+    sealDiagonalWallTouches(rng, grid, forbidden);
 
     const reachable = floodReachable(grid, entrance);
     if (!reachable.has(`${exitC[0]},${exitC[1]}`)) continue;
