@@ -127,7 +127,13 @@ export function monsterDamage(val: string): number {
 /** Short inspect text for a grid cell (tap when not moving there). */
 export function hintForCell(
   cell: string,
-  opts?: { isPlayer?: boolean; hasShield?: boolean; revealSecrets?: boolean },
+  opts?: {
+    isPlayer?: boolean;
+    hasShield?: boolean;
+    revealSecrets?: boolean;
+    /** Persistent mode: monster stays and hits every entry. */
+    persistent?: boolean;
+  },
 ): string | null {
   if (opts?.isPlayer) return "Bob — you are here.";
   if (cell === EMPTY || cell === ENTRANCE) return null;
@@ -145,11 +151,14 @@ export function hintForCell(
     const raw = Number(cell);
     const mon = MONSTER_DAMAGE.find((m) => m.damage === raw);
     const name = mon?.name ?? "Monster";
+    const mode = opts?.persistent
+      ? "hazard — damages each enter"
+      : "defeated when entered";
     if (opts?.hasShield) {
       const effective = Math.max(1, raw - 1);
-      return `${name} — −${raw} HP (shield −${effective}).`;
+      return `${name} — −${raw} HP (shield −${effective}); ${mode}.`;
     }
-    return `${name} — −${raw} HP.`;
+    return `${name} — −${raw} HP; ${mode}.`;
   }
   return null;
 }

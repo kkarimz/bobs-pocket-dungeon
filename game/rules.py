@@ -82,6 +82,8 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
         "WHEN YOU ENTER",
         (
             "Monster → lose HP (chart below)",
+            "Classic (default): defeated when entered",
+            "Persistent: stays on map; hurts each entry",
             "Coin → +1 GOLD",
             "Portal → exit at its pair; turn ends",
         ),

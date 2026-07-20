@@ -52,6 +52,7 @@ Layout seeds match between the PDF and the web app (same dungeon generator).
 
 - **Bob** — the hooded adventurer and position marker
 - Monsters: slime (−1), goblin (−2), orc (−3), dragon (−4)
+- **Monster modes:** Classic (default) — defeated when entered; Persistent — stay on the map and damage every entry (web option)
 - Merchant: potion, shield, lucky feather, bomb, and key
 - Stairs, chests, gold, and portals
 - Odd rolls = diagonal only; no cutting wall corners (D&D style)

@@ -27,11 +27,12 @@ import {
   acknowledgeMimic,
   rerollWithFeather,
   saveRun,
+  setRulesMode,
   startTurnRoll,
   stepTo,
   usePotion,
 } from "./game/engine";
-import type { RunState } from "./game/engine";
+import type { RunState, RulesMode } from "./game/engine";
 import type { Coord } from "./game/dungeon";
 import { DEFAULT_FLOORS } from "./game/rules";
 import {
@@ -53,6 +54,7 @@ function sleep(ms: number) {
 export function App() {
   const [mode, setMode] = useState<AppMode>("title");
   const [run, setRun] = useState<RunState | null>(null);
+  const [lastRulesMode, setLastRulesMode] = useState<RulesMode>("classic");
   const [walking, setWalking] = useState(false);
   const debugOn = isDebugEnabled();
   const [debugFlags, setDebugFlags] = useState<DebugFlags>(() =>
@@ -85,20 +87,22 @@ export function App() {
     return () => window.clearTimeout(t);
   }, [run, walking, debugOn, debugFlags.freeMove]);
 
-  const startNew = () => {
+  const startNew = (rulesMode: RulesMode = lastRulesMode) => {
+    setLastRulesMode(rulesMode);
     // Fresh entropy every run so layouts never repeat across sessions
     const buf = new Uint32Array(2);
     crypto.getRandomValues(buf);
     const s = (buf[0]! ^ buf[1]! ^ (Date.now() >>> 0)) >>> 0 || 1;
     clearSave();
     setWalking(false);
-    setRun(createNewRun(s, DEFAULT_FLOORS));
+    setRun(createNewRun(s, DEFAULT_FLOORS, rulesMode));
     setMode("play");
   };
 
   const continueSave = () => {
     const saved = loadRun();
     if (saved) {
+      setLastRulesMode(saved.rulesMode ?? "classic");
       setRun({ ...saved, floaters: saved.floaters ?? [], shake: false });
       setMode("play");
     }
@@ -173,7 +177,7 @@ export function App() {
     return (
       <StatsScreen
         run={run}
-        onNew={startNew}
+        onNew={() => startNew()}
         onTitle={() => {
           clearSave();
           setRun(null);
@@ -223,6 +227,8 @@ export function App() {
           <DebugPanel
             flags={debugFlags}
             onFlags={setDebugFlags}
+            rulesMode={run.rulesMode ?? "classic"}
+            onSetRulesMode={(mode) => setRun(setRulesMode(run, mode))}
             onGiveGold={() => setRun(debugGiveGold(run))}
             onHeal={() => setRun(debugHeal(run))}
             onGiveItems={() => setRun(debugGiveItems(run))}

@@ -24,6 +24,9 @@ import type { ShopItemId } from "./rules";
 
 export type Screen = "title" | "setup" | "play" | "stats";
 
+/** Classic: monster cleared after one hit. Persistent: monster stays and hits every entry. */
+export type RulesMode = "classic" | "persistent";
+
 export interface Inventory {
   "healing-potion": boolean; // owned unused
   "iron-shield": boolean;
@@ -44,6 +47,7 @@ export interface Floater {
 
 export interface RunState {
   screen: Screen;
+  rulesMode: RulesMode;
   seed: number;
   book: Book;
   floorIndex: number; // 0-based
@@ -96,12 +100,17 @@ export function emptyInventory(): Inventory {
   };
 }
 
-export function createNewRun(seed: number, floors = DEFAULT_FLOORS): RunState {
+export function createNewRun(
+  seed: number,
+  floors = DEFAULT_FLOORS,
+  rulesMode: RulesMode = "classic",
+): RunState {
   const book = generateBook(seed, floors);
   const floor = book.floors[0]!;
   return {
     screen: "play",
     seed,
+    rulesMode,
     book,
     floorIndex: 0,
     grid: cloneGrid(floor.grid),
@@ -126,6 +135,10 @@ export function createNewRun(seed: number, floors = DEFAULT_FLOORS): RunState {
     floaters: [],
     shake: false,
   };
+}
+
+export function setRulesMode(state: RunState, mode: RulesMode): RunState {
+  return { ...state, rulesMode: mode };
 }
 
 export function rollD6(): number {
@@ -404,7 +417,9 @@ function resolveCell(
     const raw = monsterDamage(cell);
     const dmg = applyDamage(next, raw);
     next.hp = Math.max(0, next.hp - dmg);
-    grid[y]![x] = EMPTY;
+    if (next.rulesMode === "classic") {
+      grid[y]![x] = EMPTY;
+    }
     if (next.bombArmed) {
       next.inventory = { ...next.inventory, usedBomb: true };
       next.bombArmed = false;
@@ -435,7 +450,7 @@ function resolveCell(
       next.floaters = pushFloater(next, "SHOP", "info");
     }
   } else if (cell === MIMIC) {
-    // Looks like a chest until you open it — then the mimic reveals
+    // Looks like a chest until you open it — then the mimic reveals (one-shot in all modes)
     if (interact) {
       const raw = MIMIC_DAMAGE;
       const dmg = applyDamage(next, raw);
@@ -841,6 +856,9 @@ export function loadRun(): RunState | null {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const state = JSON.parse(raw) as RunState;
+    if (state.rulesMode !== "classic" && state.rulesMode !== "persistent") {
+      state.rulesMode = "classic";
+    }
     if (typeof state.pendingDeath !== "boolean") {
       state.pendingDeath = false;
     }

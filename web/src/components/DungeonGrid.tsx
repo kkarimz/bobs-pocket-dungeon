@@ -48,6 +48,7 @@ export function DungeonGrid({
       isPlayer: isPos,
       hasShield,
       revealSecrets,
+      persistent: run.rulesMode === "persistent",
     });
     if (hint) onInspect(hint);
   };
@@ -104,6 +105,7 @@ export function DungeonGrid({
                         isPlayer: isPos,
                         hasShield,
                         revealSecrets,
+                        persistent: run.rulesMode === "persistent",
                       }) ?? `Cell ${x},${y}`
                 }
               >

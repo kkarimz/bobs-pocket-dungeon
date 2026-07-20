@@ -205,6 +205,9 @@ export function PlayScreen({
             <div className="play-brand">
               <img src={iconUrl("bob")} alt="" className="play-logo" />
               <h1 className="play-title">BOB&apos;S POCKET DUNGEON</h1>
+              {run.rulesMode === "persistent" && (
+                <span className="rules-mode-tag">Persistent monsters</span>
+              )}
             </div>
             <p className={`message status-banner ${inspect ? "is-inspect" : ""}`}>
               {inspect ?? statusLine(run)}
