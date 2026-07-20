@@ -328,8 +328,9 @@ export function reachableMap(state: RunState): Map<string, Coord[]> {
       const nextPath = [...cur.path, n];
       if (!result.has(k)) result.set(k, nextPath);
 
-      // Portals / stairs end the path; chests can be walked through
-      if (cell === TELEPORTER || cell === EXIT) continue;
+      // Portals always end the path (stepping on one warps you).
+      // Chests / stairs can be walked through; interact only if you stop there.
+      if (cell === TELEPORTER) continue;
 
       const nextVisited = new Set(cur.visited);
       nextVisited.add(k);
@@ -413,7 +414,7 @@ function resolveCell(
     next.message = "+1 GOLD.";
     next.floaters = pushFloater(next, "+1 GOLD", "gold");
   } else if (cell === SHOP) {
-    // D&D-style: only open when you stop on the chest, not when passing through
+    // Object interaction: only when you stop on the chest
     if (pathEnd) {
       next.shopOpen = true;
       next.message = "Merchant.";
@@ -430,10 +431,13 @@ function resolveCell(
       next.floaters = pushFloater(next, "WHOOSH", "info");
     }
   } else if (cell === EXIT) {
-    next.pendingStairs = true;
-    next.movesLeft = 0;
-    next.message = "The gate awaits.";
-    next.floaters = pushFloater(next, "GATE", "info");
+    // Using the stairs is intentional — only when your path ends here
+    if (pathEnd) {
+      next.pendingStairs = true;
+      next.movesLeft = 0;
+      next.message = "The gate awaits.";
+      next.floaters = pushFloater(next, "GATE", "info");
+    }
   } else if (cell === WALL && next.keyArmed) {
     grid[y]![x] = EMPTY;
     next.inventory = { ...next.inventory, usedKey: true };

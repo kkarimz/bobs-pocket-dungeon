@@ -36,7 +36,7 @@ SHOP_ITEMS: tuple[ShopItem, ...] = (
     ShopItem("Healing Potion", 3, "Restore 3 HP (once)"),
     ShopItem("Iron Shield", 5, "All monster damage −1 (min 1)", "Owned"),
     ShopItem("Lucky Feather", 3, "Reroll one die (once)"),
-    ShopItem("Blackpowder Bomb", 3, "Ignore 1 monster completely"),
+    ShopItem("Blackpowder Bomb", 3, "Ignore 1 fight completely"),
     ShopItem("Skeleton Key", 2, "Pass through 1 wall (once)"),
 )
 
@@ -45,6 +45,8 @@ TAGLINE = "A solo roll-and-write dungeon crawl"
 CURRENCY = "GOLD"
 
 # Compact rules for the 4×6 rules page (drawn with larger type)
+# Movement & interaction lean on D&D grid habits: no corner-cutting;
+# chests/stairs need you to stop; portals fire when entered.
 RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "NEED",
@@ -69,12 +71,17 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
         ),
     ),
     (
-        "WHEN YOU CROSS",
+        "WHEN YOU ENTER",
         (
             "Monster → lose HP (chart below)",
             "Coin → +1 GOLD",
-            "Chest → stop on it to buy once",
             "Portal → exit at its pair; turn ends",
+        ),
+    ),
+    (
+        "WHEN YOU STOP",
+        (
+            "Chest → you may buy once",
             "Stairs → go to the next floor",
         ),
     ),

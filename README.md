@@ -55,6 +55,7 @@ Layout seeds match between the PDF and the web app (same dungeon generator).
 - Merchant: potion, shield, lucky feather, bomb, and key
 - Stairs, chests, gold, and portals
 - Odd rolls = diagonal only; no cutting wall corners (D&D style)
+- Enter monster / coin / portal; **stop** on chest or stairs to use them
 - Walls are placed in L-shaped blocks for clearer corridors
 
 ## Printing on 4×6 photo paper
