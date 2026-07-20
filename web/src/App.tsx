@@ -93,9 +93,11 @@ export function App() {
 
     setWalking(true);
     let state = current;
-    for (const step of path) {
+    for (let i = 0; i < path.length; i++) {
+      const step = path[i]!;
+      const pathEnd = i === path.length - 1;
       const prev = state;
-      state = stepTo(state, step);
+      state = stepTo(state, step, { pathEnd });
       setRun(state);
       runRef.current = state;
 

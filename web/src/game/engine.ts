@@ -328,8 +328,8 @@ export function reachableMap(state: RunState): Map<string, Coord[]> {
       const nextPath = [...cur.path, n];
       if (!result.has(k)) result.set(k, nextPath);
 
-      // Paths may end on portal/stairs/shop, but not continue past them
-      if (cell === TELEPORTER || cell === EXIT || cell === SHOP) continue;
+      // Portals / stairs end the path; chests can be walked through
+      if (cell === TELEPORTER || cell === EXIT) continue;
 
       const nextVisited = new Set(cur.visited);
       nextVisited.add(k);
@@ -369,7 +369,12 @@ function applyDamage(state: RunState, raw: number): number {
   return dmg;
 }
 
-function resolveCell(state: RunState, pos: Coord): RunState {
+function resolveCell(
+  state: RunState,
+  pos: Coord,
+  /** True when this step is the end of the chosen path (intentional stop). */
+  pathEnd = true,
+): RunState {
   const [x, y] = pos;
   const cell = state.grid[y]![x]!;
   let next: RunState = {
@@ -408,9 +413,12 @@ function resolveCell(state: RunState, pos: Coord): RunState {
     next.message = "+1 GOLD.";
     next.floaters = pushFloater(next, "+1 GOLD", "gold");
   } else if (cell === SHOP) {
-    next.shopOpen = true;
-    next.message = "Merchant.";
-    next.floaters = pushFloater(next, "SHOP", "info");
+    // D&D-style: only open when you stop on the chest, not when passing through
+    if (pathEnd) {
+      next.shopOpen = true;
+      next.message = "Merchant.";
+      next.floaters = pushFloater(next, "SHOP", "info");
+    }
   } else if (cell === TELEPORTER) {
     const portals = findPortals(grid);
     const other = portals.find((p) => p[0] !== x || p[1] !== y);
@@ -498,7 +506,11 @@ export function acknowledgeDeath(state: RunState): RunState {
   };
 }
 
-export function stepTo(state: RunState, dest: Coord): RunState {
+export function stepTo(
+  state: RunState,
+  dest: Coord,
+  opts?: { pathEnd?: boolean },
+): RunState {
   const legal = adjacentMoves(state);
   if (!legal.some((c) => c[0] === dest[0] && c[1] === dest[1])) return state;
 
@@ -510,7 +522,7 @@ export function stepTo(state: RunState, dest: Coord): RunState {
     // while Bob keeps walking; resolveCell prunes stale ones.
     shake: false,
   };
-  next = resolveCell(next, dest);
+  next = resolveCell(next, dest, opts?.pathEnd ?? true);
   if (next.screen !== "play") return next;
   if (next.movesLeft === 0 && !next.pendingStairs && !next.shopOpen) {
     // Keep short event text; otherwise prompt next roll

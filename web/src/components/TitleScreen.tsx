@@ -30,7 +30,7 @@ export function TitleScreen({ hasContinue, onNew, onContinue }: Props) {
           <li>Roll d6 for starting HP = 6 + roll.</li>
           <li>Each turn: roll — EVEN straight, ODD diagonal only (no cutting wall corners).</li>
           <li>Tap highlighted cells to move up to the roll. No steps? Roll again.</li>
-          <li>Enter a monster → lose HP (chart below). Coins +1 GOLD. Chests sell. Portals end the turn.</li>
+          <li>Enter a monster → lose HP (chart below). Coins +1 GOLD. Stop on a chest to shop. Portals end the turn.</li>
           <li>Stairs go deeper. At 0 HP you die, reset, and continue.</li>
         </ul>
         <h3 className="rules-chart-title">MONSTER DAMAGE</h3>

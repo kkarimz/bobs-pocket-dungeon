@@ -119,7 +119,7 @@ export function hintForCell(
   if (cell === EMPTY || cell === ENTRANCE) return null;
   if (cell === WALL) return "Wall — blocked.";
   if (cell === COIN) return "Coin — +1 GOLD.";
-  if (cell === SHOP) return "Merchant — buy with GOLD.";
+  if (cell === SHOP) return "Merchant — stop here to buy.";
   if (cell === TELEPORTER) return "Portal — exit at pair; turn ends.";
   if (cell === EXIT) return "Stairs — next floor.";
   if (/^[1-9]$/.test(cell)) {

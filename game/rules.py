@@ -73,7 +73,7 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
         (
             "Monster → lose HP (chart below)",
             "Coin → +1 GOLD",
-            "Chest → you may buy once",
+            "Chest → stop on it to buy once",
             "Portal → exit at its pair; turn ends",
             "Stairs → go to the next floor",
         ),
