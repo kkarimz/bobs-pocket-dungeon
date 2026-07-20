@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Coord } from "../game/dungeon";
-import { iconForCell } from "../game/rules";
+import { hintForCell, iconForCell } from "../game/rules";
 import { iconUrl } from "../game/icons";
 import type { RunState } from "../game/engine";
 
@@ -10,6 +10,7 @@ interface Props {
   pathPreview: Coord[];
   walking: boolean;
   onGoTo: (c: Coord) => void;
+  onInspect: (hint: string) => void;
 }
 
 export function DungeonGrid({
@@ -18,6 +19,7 @@ export function DungeonGrid({
   pathPreview,
   walking,
   onGoTo,
+  onInspect,
 }: Props) {
   const legalSet = useMemo(
     () => new Set(legal.map(([x, y]) => `${x},${y}`)),
@@ -31,6 +33,18 @@ export function DungeonGrid({
   const [px, py] = run.pos;
   const hasMoves = legal.length > 0 && !walking;
   const [hover, setHover] = useState<string | null>(null);
+  const hasShield = !!run.inventory["iron-shield"];
+
+  const handleCell = (x: number, y: number, cell: string, isPos: boolean) => {
+    if (walking) return;
+    const k = `${x},${y}`;
+    if (hasMoves && legalSet.has(k)) {
+      onGoTo([x, y]);
+      return;
+    }
+    const hint = hintForCell(cell, { isPlayer: isPos, hasShield });
+    if (hint) onInspect(hint);
+  };
 
   return (
     <div className={`grid-wrap ${run.shake ? "is-shaking" : ""}`}>
@@ -52,6 +66,10 @@ export function DungeonGrid({
               : cell === "@"
                 ? null
                 : iconForCell(cell);
+            const canInspect =
+              isPos ||
+              (!!iconForCell(cell) && cell !== "@") ||
+              cell === "#";
             return (
               <button
                 key={k}
@@ -64,14 +82,20 @@ export function DungeonGrid({
                   hasMoves && !isLegal && !isPos ? "cell-dim" : "",
                   isVisited && !isPos ? "cell-visited" : "",
                   cell === "#" ? "cell-wall" : "",
+                  canInspect && !(hasMoves && isLegal) ? "cell-inspectable" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
-                disabled={!isLegal || walking}
-                onClick={() => onGoTo([x, y])}
+                disabled={walking}
+                onClick={() => handleCell(x, y, cell, isPos)}
                 onPointerEnter={() => isLegal && setHover(k)}
                 onPointerLeave={() => setHover(null)}
-                aria-label={isLegal ? `Go to ${x},${y}` : `Cell ${x},${y}`}
+                aria-label={
+                  isLegal && hasMoves
+                    ? `Go to ${x},${y}`
+                    : hintForCell(cell, { isPlayer: isPos, hasShield }) ??
+                      `Cell ${x},${y}`
+                }
               >
                 {icon ? (
                   <img src={iconUrl(icon)} alt="" draggable={false} />

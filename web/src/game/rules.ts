@@ -109,3 +109,28 @@ export function monsterDamage(val: string): number {
   if (!/^[1-9]$/.test(val)) return 0;
   return Number(val);
 }
+
+/** Short inspect text for a grid cell (tap when not moving there). */
+export function hintForCell(
+  cell: string,
+  opts?: { isPlayer?: boolean; hasShield?: boolean },
+): string | null {
+  if (opts?.isPlayer) return "Bob — you are here.";
+  if (cell === EMPTY || cell === ENTRANCE) return null;
+  if (cell === WALL) return "Wall — blocked.";
+  if (cell === COIN) return "Coin — +1 GOLD.";
+  if (cell === SHOP) return "Merchant — buy with GOLD.";
+  if (cell === TELEPORTER) return "Portal — exit at pair; turn ends.";
+  if (cell === EXIT) return "Stairs — next floor.";
+  if (/^[1-9]$/.test(cell)) {
+    const raw = Number(cell);
+    const mon = MONSTER_DAMAGE.find((m) => m.damage === raw);
+    const name = mon?.name ?? "Monster";
+    if (opts?.hasShield) {
+      const effective = Math.max(1, raw - 1);
+      return `${name} — −${raw} HP (shield −${effective}).`;
+    }
+    return `${name} — −${raw} HP.`;
+  }
+  return null;
+}

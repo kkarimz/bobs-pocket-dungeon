@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Coord } from "../game/dungeon";
 import type { RunState } from "../game/engine";
-import { EXIT } from "../game/rules";
+import { EXIT, SHOP_ITEMS } from "../game/rules";
 import type { ShopItemId } from "../game/rules";
 import { iconUrl } from "../game/icons";
 import { DungeonGrid } from "./DungeonGrid";
@@ -41,6 +41,37 @@ function statusLine(run: RunState): string {
   if (!legacy && event) return raw;
   if (!legacy && (raw === "Roll again." || raw === "Roll to move.")) return raw;
   return "Roll to move.";
+}
+
+function itemHint(
+  id: ShopItemId,
+  run: RunState,
+): string {
+  const item = SHOP_ITEMS.find((s) => s.id === id)!;
+  const owned =
+    id === "healing-potion"
+      ? run.inventory["healing-potion"]
+      : id === "iron-shield"
+        ? run.inventory["iron-shield"]
+        : id === "lucky-feather"
+          ? run.inventory["lucky-feather"]
+          : id === "blackpowder-bomb"
+            ? run.inventory["blackpowder-bomb"]
+            : run.inventory["skeleton-key"];
+  const used =
+    id === "healing-potion"
+      ? run.inventory.usedPotion
+      : id === "lucky-feather"
+        ? run.inventory.usedFeather
+        : id === "blackpowder-bomb"
+          ? run.inventory.usedBomb
+          : id === "skeleton-key"
+            ? run.inventory.usedKey
+            : false;
+  if (!owned) return `${item.name} — ${item.effect} · ${item.cost} GOLD.`;
+  if (used) return `${item.name} — used.`;
+  if (id === "iron-shield") return `${item.name} — ${item.effect}.`;
+  return `${item.name} — ${item.effect}.`;
 }
 
 interface Props {
@@ -84,6 +115,17 @@ export function PlayScreen({
 }: Props) {
   const [rolling, setRolling] = useState(false);
   const [rerolling, setRerolling] = useState(false);
+  const [inspect, setInspect] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!inspect) return;
+    const t = window.setTimeout(() => setInspect(null), 2400);
+    return () => window.clearTimeout(t);
+  }, [inspect]);
+
+  const showInspect = (hint: string) => {
+    setInspect(hint);
+  };
 
   const needsHp = run.startingHp <= 0;
   const canRoll =
@@ -149,7 +191,9 @@ export function PlayScreen({
               <img src={iconUrl("bob")} alt="" className="play-logo" />
               <h1 className="play-title">BOB&apos;S POCKET DUNGEON</h1>
             </div>
-            <p className="message status-banner">{statusLine(run)}</p>
+            <p className={`message status-banner ${inspect ? "is-inspect" : ""}`}>
+              {inspect ?? statusLine(run)}
+            </p>
           </header>
 
           <DungeonGrid
@@ -158,6 +202,7 @@ export function PlayScreen({
             pathPreview={[]}
             walking={walking}
             onGoTo={onGoTo}
+            onInspect={showInspect}
           />
         </div>
 
@@ -234,49 +279,97 @@ export function PlayScreen({
             <button
               type="button"
               className="item-btn"
-              disabled={
+              aria-disabled={
                 !run.inventory["healing-potion"] || run.inventory.usedPotion
               }
-              onClick={onPotion}
-              title="Healing Potion"
+              onClick={() => {
+                if (
+                  !run.inventory["healing-potion"] ||
+                  run.inventory.usedPotion
+                ) {
+                  showInspect(itemHint("healing-potion", run));
+                  return;
+                }
+                onPotion();
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                showInspect(itemHint("healing-potion", run));
+              }}
             >
               <img src={iconUrl("potion")} alt="Potion" />
             </button>
             <button
               type="button"
               className={`item-btn ${run.inventory["iron-shield"] ? "on" : ""}`}
-              disabled={!run.inventory["iron-shield"]}
-              title="Iron Shield"
+              onClick={() => showInspect(itemHint("iron-shield", run))}
             >
               <img src={iconUrl("shield")} alt="Shield" />
             </button>
             <button
               type="button"
               className={`item-btn ${run.bombArmed ? "armed" : ""}`}
-              disabled={
+              aria-disabled={
                 !run.inventory["blackpowder-bomb"] || run.inventory.usedBomb
               }
-              onClick={onBomb}
-              title="Bomb"
+              onClick={() => {
+                if (
+                  !run.inventory["blackpowder-bomb"] ||
+                  run.inventory.usedBomb
+                ) {
+                  showInspect(itemHint("blackpowder-bomb", run));
+                  return;
+                }
+                onBomb();
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                showInspect(itemHint("blackpowder-bomb", run));
+              }}
             >
               <img src={iconUrl("bomb")} alt="Bomb" />
             </button>
             <button
               type="button"
               className={`item-btn ${run.keyArmed ? "armed" : ""}`}
-              disabled={!run.inventory["skeleton-key"] || run.inventory.usedKey}
-              onClick={onKey}
-              title="Skeleton Key"
+              aria-disabled={
+                !run.inventory["skeleton-key"] || run.inventory.usedKey
+              }
+              onClick={() => {
+                if (!run.inventory["skeleton-key"] || run.inventory.usedKey) {
+                  showInspect(itemHint("skeleton-key", run));
+                  return;
+                }
+                onKey();
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                showInspect(itemHint("skeleton-key", run));
+              }}
             >
               <img src={iconUrl("key")} alt="Key" />
             </button>
             <button
               type="button"
               className="item-btn"
-              disabled={
+              aria-disabled={
                 !run.inventory["lucky-feather"] || run.inventory.usedFeather
               }
-              title="Lucky Feather"
+              onClick={() => {
+                if (
+                  !run.inventory["lucky-feather"] ||
+                  run.inventory.usedFeather ||
+                  !featherReady
+                ) {
+                  showInspect(itemHint("lucky-feather", run));
+                  return;
+                }
+                setRerolling(true);
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                showInspect(itemHint("lucky-feather", run));
+              }}
             >
               <img src={iconUrl("feather")} alt="Feather" />
             </button>
