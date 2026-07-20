@@ -285,16 +285,16 @@ h1 {
   width: 72px;
   height: 72px;
   border: 3px solid var(--line);
-  border-radius: 10px;
+  border-radius: 4px;
   background:
-    linear-gradient(145deg, #f4ebd4 0%, var(--cell) 45%, #d9cdb0 100%);
+    linear-gradient(160deg, #f7efdc 0%, var(--cell) 42%, #dccfb3 100%);
   display: grid;
   place-items: center;
   cursor: pointer;
-  padding: 8px;
+  padding: 4px;
   box-shadow:
     0 2px 0 #8a6230,
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -317,14 +317,14 @@ h1 {
     box-shadow:
       0 2px 0 #8a6230,
       0 0 6px rgba(232, 180, 90, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
   50% {
-    transform: translateY(-3px) scale(1.06);
+    transform: translateY(-3px) scale(1.05);
     box-shadow:
       0 5px 0 #8a6230,
-      0 0 16px rgba(232, 180, 90, 0.55),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      0 0 14px rgba(232, 180, 90, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
 }
 
@@ -334,15 +334,15 @@ h1 {
     box-shadow:
       0 2px 0 #8a6230,
       0 0 10px rgba(232, 180, 90, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
 }
 
 .dice-roller.size-lg .dice-face {
   width: 104px;
   height: 104px;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 8px;
+  border-radius: 6px;
 }
 
 .dice-face:disabled {
@@ -354,47 +354,39 @@ h1 {
   opacity: 0.55;
 }
 
-.die-pips {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  width: 100%;
-  height: 100%;
-  gap: 0;
-}
-
-.die-pip {
-  display: block;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.die-pip.on::after {
-  content: "";
-  position: absolute;
-  inset: 18%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #3a2a1c 0%, var(--ink-deep) 70%);
-  box-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.15);
-}
-
-.die-idle-mark {
-  font-size: 1.65rem;
+.die-num {
+  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  font-size: 2.15rem;
   font-weight: 900;
   line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--ink-deep);
-  opacity: 0.28;
-  letter-spacing: 0.02em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  font-variant-numeric: tabular-nums;
 }
 
-.dice-roller.size-lg .die-idle-mark {
-  font-size: 2.4rem;
+.dice-roller.size-lg .die-num {
+  font-size: 3.1rem;
+}
+
+.die-roll-label {
+  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: var(--ink-deep);
+  opacity: 0.55;
+  line-height: 1;
+}
+
+.dice-roller.size-lg .die-roll-label {
+  font-size: 1rem;
+  letter-spacing: 0.16em;
 }
 
 .dice-face.is-idle {
   background:
-    linear-gradient(145deg, #efe6d0 0%, #e0d4b8 50%, #cfc2a4 100%);
+    linear-gradient(160deg, #efe6d0 0%, #e2d6bc 50%, #d0c3a6 100%);
 }
 
 .dice-hint {
@@ -408,7 +400,7 @@ h1 {
   animation: tumble 0.12s linear infinite;
 }
 
-.dice-face.tumbling .die-pip.on::after {
+.dice-face.tumbling .die-num {
   animation: flicker 0.08s steps(2) infinite;
 }
 
@@ -699,12 +691,13 @@ h1 {
 }
 
 .side-rail .rail-die .dice-face {
-  padding: 6px;
+  padding: 2px;
+  border-radius: 2px;
   background:
-    linear-gradient(145deg, #f4ebd4 0%, var(--cell) 45%, #d9cdb0 100%);
+    linear-gradient(160deg, #f7efdc 0%, var(--cell) 42%, #dccfb3 100%);
   box-shadow:
     0 2px 0 var(--line),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .side-rail .rail-die .dice-face.can-roll:active {
@@ -713,12 +706,13 @@ h1 {
   box-shadow: 0 0 0 #8a6230;
 }
 
-.side-rail .rail-die .die-idle-mark {
-  font-size: 1.15rem;
+.side-rail .rail-die .die-num {
+  font-size: clamp(1.15rem, calc(var(--rail-size) * 0.58), 1.85rem);
 }
 
-.side-rail .rail-die .die-pip.on::after {
-  inset: 20%;
+.side-rail .rail-die .die-roll-label {
+  font-size: clamp(0.45rem, calc(var(--rail-size) * 0.22), 0.7rem);
+  letter-spacing: 0.1em;
 }
 
 .dice-meta {
@@ -1191,12 +1185,12 @@ h1 {
 .hp-setup-card .dice-roller.variant-rail .dice-face {
   width: 88px;
   height: 88px;
-  border-radius: 12px;
-  padding: 10px;
+  border-radius: 6px;
+  padding: 8px;
 }
 
-.hp-setup-card .die-idle-mark {
-  font-size: 2rem;
+.hp-setup-card .die-roll-label {
+  font-size: 0.95rem;
 }
 
 .modal-backdrop {

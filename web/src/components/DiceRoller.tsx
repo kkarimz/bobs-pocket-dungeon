@@ -14,31 +14,7 @@ interface Props {
   variant?: "default" | "rail";
 }
 
-/** Classic d6 pip positions on a 3×3 grid (row-major indices 0–8). */
-const PIP_LAYOUT: Record<number, readonly number[]> = {
-  1: [4],
-  2: [0, 8],
-  3: [0, 4, 8],
-  4: [0, 2, 6, 8],
-  5: [0, 2, 4, 6, 8],
-  6: [0, 2, 3, 5, 6, 8],
-};
-
-function DiePips({ face }: { face: number | null }) {
-  if (face === null) {
-    return <span className="die-idle-mark" aria-hidden>?</span>;
-  }
-  const on = new Set(PIP_LAYOUT[face] ?? []);
-  return (
-    <span className={`die-pips face-${face}`} aria-hidden>
-      {Array.from({ length: 9 }, (_, i) => (
-        <i key={i} className={`die-pip${on.has(i) ? " on" : ""}`} />
-      ))}
-    </span>
-  );
-}
-
-/** Tap the die to roll — no separate button. */
+/** Tap to roll — parchment number tile (keeps last result; idle shows ROLL). */
 export function DiceRoller({
   rolling,
   value,
@@ -80,6 +56,7 @@ export function DiceRoller({
 
   const busy = disabled || animating || rolling;
   const face = display && display >= 1 && display <= 6 ? display : null;
+  const canRoll = !busy;
 
   return (
     <div
@@ -87,12 +64,27 @@ export function DiceRoller({
     >
       <button
         type="button"
-        className={`dice-face ${animating ? "tumbling" : ""} ${!busy ? "can-roll" : ""} ${face === null ? "is-idle" : ""}`}
+        className={[
+          "dice-face",
+          animating ? "tumbling" : "",
+          canRoll ? "can-roll" : "",
+          face === null ? "is-idle" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         disabled={busy}
         onClick={onRollRequest}
         aria-label={label}
       >
-        <DiePips face={face} />
+        {face !== null ? (
+          <span className="die-num" aria-hidden>
+            {face}
+          </span>
+        ) : (
+          <span className="die-roll-label" aria-hidden>
+            ROLL
+          </span>
+        )}
       </button>
       {variant !== "rail" && !busy && hint ? (
         <span className="dice-hint">{hint}</span>
