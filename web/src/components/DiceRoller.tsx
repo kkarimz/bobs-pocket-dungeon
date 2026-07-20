@@ -12,45 +12,13 @@ interface Props {
   hint?: string;
   /** Compact die for the side rail */
   variant?: "default" | "rail";
-  /** Even = straight, odd = diagonal — lights the face frame */
+  /** Even = straight, odd = diagonal — lights edge/corner dots */
   diagonal?: boolean;
-  /** Remaining steps this turn (shown in the center while moving) */
+  /** Remaining steps this turn (shown while moving) */
   movesLeft?: number;
 }
 
-function DirFrame({
-  diagonal,
-  active,
-  center,
-}: {
-  diagonal: boolean;
-  active: boolean;
-  center: ReactNode;
-}) {
-  return (
-    <span
-      className={`die-frame ${active ? (diagonal ? "diag" : "orth") : "idle"}`}
-      aria-hidden
-    >
-      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => {
-        const orth = i === 1 || i === 3 || i === 5 || i === 7;
-        const diag = i === 0 || i === 2 || i === 6 || i === 8;
-        const isCenter = i === 4;
-        const on = active && (diagonal ? diag : orth);
-        return (
-          <i
-            key={i}
-            className={`die-frame-cell${on ? " on" : ""}${isCenter ? " hub" : ""}`}
-          >
-            {isCenter ? center : null}
-          </i>
-        );
-      })}
-    </span>
-  );
-}
-
-/** Tap to roll — number + direction fused into one tile. */
+/** Tap to roll — number tile with tiny edge/corner mode dots. */
 export function DiceRoller({
   rolling,
   value,
@@ -108,11 +76,7 @@ export function DiceRoller({
     center = <span className="die-roll-label">ROLL</span>;
   }
 
-  const modeLabel = !modeActive
-    ? ""
-    : diagonal
-      ? "diagonal"
-      : "straight";
+  const modeLabel = !modeActive ? "" : diagonal ? "diagonal" : "straight";
 
   return (
     <div
@@ -132,10 +96,31 @@ export function DiceRoller({
         disabled={busy}
         onClick={onRollRequest}
         aria-label={
-          modeLabel ? `${label} (${modeLabel}, ${movesLeft || face} left)` : label
+          modeLabel
+            ? `${label} (${modeLabel}, ${movesLeft || face} left)`
+            : label
         }
       >
-        <DirFrame diagonal={diagonal} active={modeActive} center={center} />
+        {modeActive && (
+          <span className="die-mode-dots" aria-hidden>
+            {diagonal ? (
+              <>
+                <i className="dot nw" />
+                <i className="dot ne" />
+                <i className="dot sw" />
+                <i className="dot se" />
+              </>
+            ) : (
+              <>
+                <i className="dot n" />
+                <i className="dot e" />
+                <i className="dot s" />
+                <i className="dot w" />
+              </>
+            )}
+          </span>
+        )}
+        <span className="die-center">{center}</span>
       </button>
       {variant !== "rail" && !busy && hint ? (
         <span className="dice-hint">{hint}</span>
