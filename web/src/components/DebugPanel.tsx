@@ -1,13 +1,10 @@
 import { useState } from "react";
-import type { RulesMode } from "../game/engine";
 import type { DebugFlags } from "../game/debug";
 import { saveDebugFlags } from "../game/debug";
 
 interface Props {
   flags: DebugFlags;
   onFlags: (flags: DebugFlags) => void;
-  rulesMode: RulesMode;
-  onSetRulesMode: (mode: RulesMode) => void;
   onGiveGold: () => void;
   onHeal: () => void;
   onGiveItems: () => void;
@@ -19,8 +16,6 @@ interface Props {
 export function DebugPanel({
   flags,
   onFlags,
-  rulesMode,
-  onSetRulesMode,
   onGiveGold,
   onHeal,
   onGiveItems,
@@ -47,23 +42,6 @@ export function DebugPanel({
       {open && (
         <div className="debug-body">
           <p className="debug-title">Debug</p>
-          <div className="debug-rules-mode">
-            <span className="debug-rules-label">Rules</span>
-            <button
-              type="button"
-              className={`btn tiny ${rulesMode === "classic" ? "primary" : ""}`}
-              onClick={() => onSetRulesMode("classic")}
-            >
-              Classic
-            </button>
-            <button
-              type="button"
-              className={`btn tiny ${rulesMode === "persistent" ? "primary" : ""}`}
-              onClick={() => onSetRulesMode("persistent")}
-            >
-              Persistent
-            </button>
-          </div>
           <label className="debug-check">
             <input
               type="checkbox"

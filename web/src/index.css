@@ -123,63 +123,6 @@ h1 {
   padding: 0.85rem 1.2rem;
 }
 
-.rules-mode-pick {
-  border: 2px solid var(--line);
-  background: var(--panel);
-  border-radius: 4px;
-  margin: 0;
-  padding: 0.55rem 0.65rem 0.65rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.rules-mode-pick legend {
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 0 0.25rem;
-}
-
-.rules-mode-opt {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  column-gap: 0.45rem;
-  row-gap: 0.05rem;
-  align-items: center;
-  padding: 0.35rem 0.45rem;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.88rem;
-}
-
-.rules-mode-opt.is-on {
-  border-color: var(--line);
-  background: rgba(232, 180, 90, 0.08);
-}
-
-.rules-mode-opt input {
-  grid-row: 1 / span 2;
-  accent-color: var(--accent);
-}
-
-.rules-mode-label {
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.rules-mode-hint {
-  grid-column: 2;
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-
 .btn.small {
   padding: 0.35rem 0.6rem;
   font-size: 0.85rem;
@@ -718,16 +661,6 @@ h1 {
   width: 100%;
 }
 
-.rules-mode-tag {
-  flex: 0 0 100%;
-  text-align: center;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
 .play-title {
   margin: 0;
   font-family: var(--font-display);
@@ -966,6 +899,21 @@ h1 {
 
 .cell-wall {
   background: #cfc3a8;
+}
+
+.cell-defeated {
+  color: var(--ink, #3a2e1f);
+}
+
+.cell-mark-x {
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 3.2vw, 1.15rem);
+  font-weight: 700;
+  line-height: 1;
+  color: #6b4a2e;
+  opacity: 0.72;
+  pointer-events: none;
+  user-select: none;
 }
 
 .cell-visited {
@@ -1600,21 +1548,6 @@ h1 {
   font-size: 0.68rem;
   letter-spacing: 0.12em;
   color: #ffb4a8;
-  text-transform: uppercase;
-}
-
-.debug-rules-mode {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.debug-rules-label {
-  flex: 0 0 100%;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
   text-transform: uppercase;
 }
 

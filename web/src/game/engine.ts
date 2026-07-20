@@ -12,6 +12,7 @@ import {
   EXIT,
   MIMIC,
   MIMIC_DAMAGE,
+  DEFEATED,
   SHOP,
   SHOP_ITEMS,
   STARTING_COINS,
@@ -23,9 +24,6 @@ import {
 import type { ShopItemId } from "./rules";
 
 export type Screen = "title" | "setup" | "play" | "stats";
-
-/** Classic: monster cleared after one hit. Persistent: monster stays and hits every entry. */
-export type RulesMode = "classic" | "persistent";
 
 export interface Inventory {
   "healing-potion": boolean; // owned unused
@@ -47,7 +45,6 @@ export interface Floater {
 
 export interface RunState {
   screen: Screen;
-  rulesMode: RulesMode;
   seed: number;
   book: Book;
   floorIndex: number; // 0-based
@@ -103,14 +100,12 @@ export function emptyInventory(): Inventory {
 export function createNewRun(
   seed: number,
   floors = DEFAULT_FLOORS,
-  rulesMode: RulesMode = "classic",
 ): RunState {
   const book = generateBook(seed, floors);
   const floor = book.floors[0]!;
   return {
     screen: "play",
     seed,
-    rulesMode,
     book,
     floorIndex: 0,
     grid: cloneGrid(floor.grid),
@@ -135,10 +130,6 @@ export function createNewRun(
     floaters: [],
     shake: false,
   };
-}
-
-export function setRulesMode(state: RunState, mode: RulesMode): RunState {
-  return { ...state, rulesMode: mode };
 }
 
 export function rollD6(): number {
@@ -417,9 +408,8 @@ function resolveCell(
     const raw = monsterDamage(cell);
     const dmg = applyDamage(next, raw);
     next.hp = Math.max(0, next.hp - dmg);
-    if (next.rulesMode === "classic") {
-      grid[y]![x] = EMPTY;
-    }
+    // Defeat on contact — leave an X so you can see where the fight was
+    grid[y]![x] = DEFEATED;
     if (next.bombArmed) {
       next.inventory = { ...next.inventory, usedBomb: true };
       next.bombArmed = false;
@@ -855,10 +845,9 @@ export function loadRun(): RunState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    const state = JSON.parse(raw) as RunState;
-    if (state.rulesMode !== "classic" && state.rulesMode !== "persistent") {
-      state.rulesMode = "classic";
-    }
+    const state = JSON.parse(raw) as RunState & { rulesMode?: string };
+    // Drop legacy classic/persistent picker field from older saves
+    delete state.rulesMode;
     if (typeof state.pendingDeath !== "boolean") {
       state.pendingDeath = false;
     }

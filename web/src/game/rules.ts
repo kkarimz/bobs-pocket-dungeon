@@ -12,6 +12,8 @@ export const COIN = "o";
 export const SHOP = "S";
 export const MIMIC = "M";
 export const TELEPORTER = "T";
+/** Defeated monster marker (passable). */
+export const DEFEATED = "x";
 
 /** Mimic bite when you open the fake chest (shield/bomb apply). */
 export const MIMIC_DAMAGE = 2;
@@ -131,12 +133,11 @@ export function hintForCell(
     isPlayer?: boolean;
     hasShield?: boolean;
     revealSecrets?: boolean;
-    /** Persistent mode: monster stays and hits every entry. */
-    persistent?: boolean;
   },
 ): string | null {
   if (opts?.isPlayer) return "Bob — you are here.";
   if (cell === EMPTY || cell === ENTRANCE) return null;
+  if (cell === DEFEATED) return "Defeated.";
   if (cell === WALL) return "Wall — blocked.";
   if (cell === COIN) return "Coin — +1 GOLD.";
   if (cell === SHOP) return "Chest — end your move here to open it.";
@@ -151,14 +152,11 @@ export function hintForCell(
     const raw = Number(cell);
     const mon = MONSTER_DAMAGE.find((m) => m.damage === raw);
     const name = mon?.name ?? "Monster";
-    const mode = opts?.persistent
-      ? "hazard — damages each enter"
-      : "defeated when entered";
     if (opts?.hasShield) {
       const effective = Math.max(1, raw - 1);
-      return `${name} — −${raw} HP (shield −${effective}); ${mode}.`;
+      return `${name} — −${raw} HP (shield −${effective}).`;
     }
-    return `${name} — −${raw} HP; ${mode}.`;
+    return `${name} — −${raw} HP.`;
   }
   return null;
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Coord } from "../game/dungeon";
-import { hintForCell, iconForCell } from "../game/rules";
+import { DEFEATED, hintForCell, iconForCell } from "../game/rules";
 import { iconUrl } from "../game/icons";
 import type { RunState } from "../game/engine";
 
@@ -48,7 +48,6 @@ export function DungeonGrid({
       isPlayer: isPos,
       hasShield,
       revealSecrets,
-      persistent: run.rulesMode === "persistent",
     });
     if (hint) onInspect(hint);
   };
@@ -68,6 +67,7 @@ export function DungeonGrid({
             const isLegal = legalSet.has(k);
             const onPath = pathSet.has(k) || hover === k;
             const isVisited = visited.has(k);
+            const isDefeated = cell === DEFEATED;
             const icon = isPos
               ? "bob"
               : cell === "@"
@@ -75,6 +75,7 @@ export function DungeonGrid({
                 : iconForCell(cell, { revealSecrets });
             const canInspect =
               isPos ||
+              isDefeated ||
               (!!iconForCell(cell, { revealSecrets }) && cell !== "@") ||
               cell === "#";
             return (
@@ -89,6 +90,7 @@ export function DungeonGrid({
                   hasMoves && !isLegal && !isPos ? "cell-dim" : "",
                   isVisited && !isPos ? "cell-visited" : "",
                   cell === "#" ? "cell-wall" : "",
+                  isDefeated && !isPos ? "cell-defeated" : "",
                   revealSecrets && cell === "M" ? "cell-debug-mimic" : "",
                   canInspect && !(hasMoves && isLegal) ? "cell-inspectable" : "",
                 ]
@@ -105,11 +107,16 @@ export function DungeonGrid({
                         isPlayer: isPos,
                         hasShield,
                         revealSecrets,
-                        persistent: run.rulesMode === "persistent",
                       }) ?? `Cell ${x},${y}`
                 }
               >
-                {icon ? (
+                {isPos && icon ? (
+                  <img src={iconUrl(icon)} alt="" draggable={false} />
+                ) : isDefeated ? (
+                  <span className="cell-mark-x" aria-hidden>
+                    ✕
+                  </span>
+                ) : icon ? (
                   <img src={iconUrl(icon)} alt="" draggable={false} />
                 ) : null}
               </button>
