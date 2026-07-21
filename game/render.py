@@ -25,7 +25,7 @@ from .rules import (
     RULES_SECTIONS,
     SHOP_ITEMS,
     STARTING_COINS,
-    STARTING_HP_BASE,
+    STARTING_HP,
     TAGLINE,
     TITLE,
 )
@@ -178,7 +178,7 @@ def draw_cover(c: canvas.Canvas, book: Book) -> None:
     c.drawCentredString(
         PAGE_W / 2,
         1.5 * inch,
-        f"{len(book.floors)} floors · HP = {STARTING_HP_BASE} + d6",
+        f"{len(book.floors)} floors · HP = {STARTING_HP}",
     )
     draw_icon(c, "die", PAGE_W / 2 - 0.85 * inch, 1.1 * inch, 0.28 * inch, center=True)
     c.setFont("Helvetica", 9)
@@ -346,7 +346,7 @@ def draw_shop(c: canvas.Canvas, book: Book) -> None:
     c.drawCentredString(
         PAGE_W / 2,
         MARGIN + 0.4 * inch,
-        f"START: ROLL D6 → HP = {STARTING_HP_BASE} + ____ = ____ · {STARTING_COINS} {CURRENCY}",
+        f"START: ROLL 2d6 → HP = ____ · {STARTING_COINS} {CURRENCY}",
     )
     c.setFont("Helvetica", 8)
     c.drawCentredString(PAGE_W / 2, MARGIN + 0.14 * inch, _layout_label(book.seed))

@@ -28,7 +28,7 @@ export function TitleScreen({ hasContinue, onNew, onContinue }: Props) {
       <section className="rules-brief">
         <h2>QUICK RULES</h2>
         <ul>
-          <li>Roll d6 for starting HP = 6 + roll.</li>
+          <li>Roll 2d6 for starting HP.</li>
           <li>Each turn: EVEN = straight, ODD = diagonal only. No cutting wall corners.</li>
           <li>Tap highlighted cells to move up to the roll. No steps? Roll again.</li>
           <li>

@@ -408,6 +408,6 @@ def generate_book(seed: int, floors: int = DEFAULT_FLOORS) -> Book:
 
 def book_meta() -> dict:
     return {
-        "starting_hp": "6 + d6",
+        "starting_hp": "2d6",
         "starting_coins": STARTING_COINS,
     }

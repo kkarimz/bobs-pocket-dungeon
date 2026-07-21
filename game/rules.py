@@ -10,7 +10,7 @@ GRID_ROWS = 10
 
 # Play defaults
 DEFAULT_FLOORS = 16
-STARTING_HP_BASE = 6  # Starting HP = 6 + d6 (roll at start)
+STARTING_HP = "2d6"  # Roll 2d6 at start
 STARTING_COINS = 0
 
 # Cell kinds
@@ -65,7 +65,7 @@ RULES_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "SETUP",
         (
-            "Roll d6. Starting HP = 6 + roll.",
+            "Roll 2d6 for starting HP.",
             "Start with 0 GOLD at Bob.",
         ),
     ),
