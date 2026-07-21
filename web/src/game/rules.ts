@@ -1,6 +1,7 @@
 export const GRID_COLS = 10;
 export const GRID_ROWS = 10;
 export const DEFAULT_FLOORS = 16;
+export const STARTING_HP_BASE = 6;
 export const STARTING_COINS = 0;
 
 export const EMPTY = ".";

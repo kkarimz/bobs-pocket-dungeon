@@ -16,6 +16,7 @@ import {
   SHOP,
   SHOP_ITEMS,
   STARTING_COINS,
+  STARTING_HP_BASE,
   TELEPORTER,
   WALL,
   monsterDamage,
@@ -135,7 +136,8 @@ export function rollD6(): number {
   return 1 + Math.floor(Math.random() * 6);
 }
 
-export function applyStartingHp(state: RunState, hp: number): RunState {
+export function applyStartingHp(state: RunState, roll: number): RunState {
+  const hp = STARTING_HP_BASE + roll;
   return {
     ...state,
     screen: "play",

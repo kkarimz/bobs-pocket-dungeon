@@ -16,6 +16,7 @@ import {
   MIMIC_DAMAGE,
   SHOP,
   STARTING_COINS,
+  STARTING_HP_BASE,
   TELEPORTER,
   WALL,
   monsterDamage,
@@ -364,7 +365,7 @@ export function simulateRun(
   rng: () => number,
   maxTurnsPerFloor = 120,
 ): RunResult {
-  const maxHp = rollD6(rng) + rollD6(rng);
+  const maxHp = STARTING_HP_BASE + rollD6(rng);
   const state: BotState = {
     grid: [],
     pos: [0, 0],
